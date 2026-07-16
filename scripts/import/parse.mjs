@@ -67,6 +67,26 @@ export function parseHeader(header, fixedFlutes = null) {
   return { flutes, coating };
 }
 
+// --- unified length measurement → { in, display, mm? } ---
+// System-aware; tolerates a trailing "mm" in the raw value (e.g. Reach "12mm");
+// recovers spreadsheet date-corruption on Imperial values.
+export function measure(raw, system, onRecover) {
+  if (raw == null) return null;
+  let s = String(raw).trim();
+  if (s === '') return null;
+  if (system === 'Imperial' && isDateCorrupted(s)) {
+    const to = recoverDate(s); if (onRecover) onRecover(s, to); s = to;
+  }
+  const hadMm = /mm/i.test(s);
+  const numStr = s.replace(/mm/ig, '').trim();
+  if (system === 'Metric' || hadMm) {
+    const mm = parseMetricMm(numStr); if (mm == null) return null;
+    return { in: round5(mm / MM_PER_IN), mm, display: `${numStr} mm` };
+  }
+  const inch = parseFraction(numStr); if (inch == null) return null;
+  return { in: round5(inch), display: `${numStr}"` };
+}
+
 // --- SQL string literal ---
 export const sql = v =>
   v == null ? 'null' : `'${String(v).replace(/'/g, "''")}'`;

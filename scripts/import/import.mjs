@@ -2,114 +2,96 @@
 //
 //   node scripts/import/import.mjs
 //
-// Reads scripts/data/*.csv per its descriptor, unpivots the flute matrix,
-// parses fractional/metric dimensions (recovering spreadsheet date-corruption),
+// Resolves columns by header NAME, so every file shape flows through one path:
+//   dimensions  → OD, LOC, SHK, OAL, Radius, Small OD, Reach, Neck
+//   taper angle → Degree
+//   flutes      → explicit "Flutes" column (else header digit, else fixedFlutes)
+//   part cells  → everything else; coating from header word, or fixedCoating for PartID
+// Parses fractional/metric dimensions, recovers spreadsheet date-corruption,
 // and emits idempotent upsert SQL to scripts/import/out/ plus a report.
-// The SQL is applied separately via the linked Supabase CLI.
 
-import { readFileSync, writeFileSync, readdirSync, rmSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  readCsv, parseFraction, parseMetricMm, round5, MM_PER_IN,
-  isDateCorrupted, recoverDate, parseHeader, sql,
-} from './parse.mjs';
+import { readCsv, measure, round5, parseHeader, sql } from './parse.mjs';
 import { DESCRIPTORS, GEOMETRY, MANUFACTURER_SLUG } from './descriptors.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', 'data');
 const OUT = join(__dirname, 'out');
-const CHUNK = 300;                       // VALUES rows per INSERT statement
+const CHUNK = 300;
 
 const report = { files: [], recovered: [], rejected: [], total: 0, seen: new Map() };
 
-// Parse one dimension cell into { in, display, mm? }; records recoveries/rejections.
-function dim(raw, system, ctx) {
-  let r = raw;
-  if (system === 'Imperial') {
-    if (isDateCorrupted(r)) { const to = recoverDate(r); report.recovered.push({ ...ctx, from: raw, to }); r = to; }
-    const inches = parseFraction(r);
-    if (inches == null) return null;
-    return { in: round5(inches), display: `${r}"` };
-  }
-  const mm = parseMetricMm(r);
-  if (mm == null) return null;
-  return { in: round5(mm / MM_PER_IN), mm, display: `${r} mm` };
+// header name → canonical dimension spec key
+const DIM_MAP = { 'od': 'od', 'loc': 'loc', 'shk': 'shk', 'oal': 'oal', 'radius': 'corner_radius', 'small od': 'small_od', 'reach': 'reach', 'neck': 'neck' };
+function classify(header) {
+  const h = header.trim().toLowerCase();
+  if (h in DIM_MAP) return { kind: 'dim', key: DIM_MAP[h] };
+  if (h === 'degree') return { kind: 'taper' };
+  if (h === 'flutes') return { kind: 'flutes' };
+  return { kind: 'part' };
 }
+const isPartId = h => /part\s*id/i.test(h);
 
-function buildName(odDisp, flutes, geometry, radiusDisp, helix, coating) {
-  let n = `${odDisp} ${flutes}-Flute ${geometry}`;
-  if (radiusDisp) n += ` × ${radiusDisp} Rad`;
-  if (helix) n += `, ${helix}° Helix`;
+function buildName(specs, flutes, geometry, coating) {
+  const size = specs.od_display ?? specs.small_od_display ?? specs.shk_display ?? '';
+  let n = `${size} ${flutes ? `${flutes}-Flute ` : ''}${geometry}`.trim();
+  if (specs.corner_radius_display) n += ` × ${specs.corner_radius_display} Rad`;
+  if (specs.taper_angle) n += `, ${specs.taper_angle}° Taper`;
+  if (specs.helix_angle) n += `, ${specs.helix_angle}° Helix`;
+  if (specs.point_angle) n += `, ${specs.point_angle}° Point`;
+  if (specs.reach_display) n += `, ${specs.reach_display} Reach`;
   if (coating === 'PowerA (AlTiN)') n += ' — PowerA';
   return n;
 }
 
-// Emit a product record (deduped globally on part_number).
-function emit(bucket, d, { partNumber, flutes, coating, od, loc, shk, oal, radius, helix }) {
+function emit(bucket, d, partNumber, flutes, coating, baseSpecs) {
   if (!partNumber) return;
   if (report.seen.has(partNumber)) {
     report.rejected.push({ file: d.file, part: partNumber, reason: `duplicate of ${report.seen.get(partNumber)}` });
     return;
   }
   report.seen.set(partNumber, d.file);
-
-  const specs = {
-    od_in: od.in, od_display: od.display,
-    loc_in: loc.in, loc_display: loc.display,
-    shk_in: shk.in, shk_display: shk.display,
-    oal_in: oal.in, oal_display: oal.display,
-    series: partNumber.split('-')[0],
-  };
-  if (radius) { specs.corner_radius_in = radius.in; specs.corner_radius_display = radius.display; }
-  if (helix) specs.helix_angle = helix;
-  if (d.system === 'Metric') {
-    specs.od_mm = od.mm; specs.loc_mm = loc.mm; specs.shk_mm = shk.mm; specs.oal_mm = oal.mm;
-    if (radius) specs.corner_radius_mm = radius.mm;
-  }
-
-  const name = buildName(od.display, flutes, GEOMETRY[d.category], radius?.display, helix, coating);
+  const specs = { ...baseSpecs, series: partNumber.split('-')[0] };
+  const name = buildName(specs, flutes, GEOMETRY[d.category], coating);
   bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes, coating, specs });
 }
 
-function processMatrix(d, headers, rows, bucket) {
-  const partStart = d.hasRadius ? 5 : 4;        // OD,LOC,SHK,OAL[,Radius], then part cols
+function processFile(d, headers, rows, bucket) {
+  const cls = headers.map(classify);
   for (const row of rows) {
     if (!row[0]) continue;
-    const ctx = { file: d.file, row: row.join(',') };
-    const od = dim(row[0], d.system, ctx), loc = dim(row[1], d.system, ctx),
-          shk = dim(row[2], d.system, ctx), oal = dim(row[3], d.system, ctx);
-    const radius = d.hasRadius ? dim(row[4], d.system, ctx) : null;
-    if (!od || !loc || !shk || !oal || (d.hasRadius && !radius)) {
-      report.rejected.push({ file: d.file, part: '(row)', reason: 'unparseable dimension', row: row.join(',') });
-      continue;
+    const specs = {};
+    let ok = true, explicitFlutes = null;
+    for (let i = 0; i < cls.length; i++) {
+      const c = cls[i], val = row[i];
+      if (c.kind === 'dim') {
+        const m = measure(val, d.system, (from, to) => report.recovered.push({ file: d.file, from, to }));
+        if (!m) { ok = false; break; }
+        specs[`${c.key}_in`] = m.in; specs[`${c.key}_display`] = m.display;
+        if (m.mm != null) specs[`${c.key}_mm`] = m.mm;
+      } else if (c.kind === 'taper' && val) {
+        specs.taper_angle = parseFloat(val);
+      } else if (c.kind === 'flutes' && val) {
+        explicitFlutes = parseInt(val, 10);
+      }
     }
-    for (let i = partStart; i < headers.length; i++) {
+    if (!ok) { report.rejected.push({ file: d.file, part: '(row)', reason: 'unparseable dimension', row: row.join(',') }); continue; }
+    if (d.fixedHelix) specs.helix_angle = d.fixedHelix;
+    if (d.fixedPointAngle) specs.point_angle = d.fixedPointAngle;
+
+    for (let i = 0; i < cls.length; i++) {
+      if (cls[i].kind !== 'part') continue;
       const cell = row[i];
       if (!cell) continue;
-      const { flutes, coating } = parseHeader(headers[i], d.fixedFlutes);
-      emit(bucket, d, { partNumber: cell, flutes, coating, od, loc, shk, oal, radius });
+      const header = headers[i];
+      let coating, headerFlutes = null;
+      if (isPartId(header)) coating = d.fixedCoating ?? 'PowerA (AlTiN)';
+      else { const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; }
+      const flutes = explicitFlutes ?? headerFlutes ?? d.fixedFlutes ?? null;
+      emit(bucket, d, cell, flutes, coating, specs);
     }
-  }
-}
-
-function processRow(d, headers, rows, bucket) {
-  const idx = k => headers.findIndex(h => h.trim().toLowerCase() === k);
-  const iR = idx('radius'), iF = idx('flutes'), iP = headers.findIndex(h => /power\s*-?\s*a/i.test(h));
-  for (const row of rows) {
-    if (!row[0]) continue;
-    const ctx = { file: d.file, row: row.join(',') };
-    const od = dim(row[0], d.system, ctx), loc = dim(row[1], d.system, ctx),
-          shk = dim(row[2], d.system, ctx), oal = dim(row[3], d.system, ctx);
-    const radius = iR >= 0 ? dim(row[iR], d.system, ctx) : null;
-    if (!od || !loc || !shk || !oal) {
-      report.rejected.push({ file: d.file, part: row[iP], reason: 'unparseable dimension', row: row.join(',') });
-      continue;
-    }
-    emit(bucket, d, {
-      partNumber: row[iP], flutes: parseInt(row[iF], 10), coating: 'PowerA (AlTiN)',
-      od, loc, shk, oal, radius, helix: d.fixedHelix,
-    });
   }
 }
 
@@ -142,30 +124,21 @@ mkdirSync(OUT, { recursive: true });
 
 let fileNo = 0;
 for (const d of DESCRIPTORS) {
-  const path = join(DATA, d.file);
-  const { headers, rows } = readCsv(readFileSync(path, 'utf8'));
+  const { headers, rows } = readCsv(readFileSync(join(DATA, d.file), 'utf8'));
   const bucket = [];
-  if (d.layout === 'row') processRow(d, headers, rows, bucket);
-  else processMatrix(d, headers, rows, bucket);
-
+  processFile(d, headers, rows, bucket);
   const out = `-- ${d.file} → ${d.category} (${d.system}) — ${bucket.length} products\n${toSql(d.category, bucket)}\n`;
-  const name = `${String(++fileNo).padStart(2, '0')}-${d.file.replace(/\.csv$/, '')}.sql`;
-  writeFileSync(join(OUT, name), out);
-  report.files.push({ file: d.file, category: d.category, system: d.system, products: bucket.length, out: name });
+  writeFileSync(join(OUT, `${String(++fileNo).padStart(2, '0')}-${d.file.replace(/\.csv$/, '')}.sql`), out);
+  report.files.push({ file: d.file, category: d.category, system: d.system, products: bucket.length });
   report.total += bucket.length;
 }
-
 writeFileSync(join(OUT, '_report.json'), JSON.stringify(report, (k, v) => k === 'seen' ? undefined : v, 2));
 
 // ---- summary ----
 console.log('\n=== IMPORT BUILD SUMMARY ===');
 for (const f of report.files) console.log(`  ${f.products.toString().padStart(4)}  ${f.file}  →  ${f.category} (${f.system})`);
-console.log(`  ${'----'}`);
-console.log(`  ${report.total.toString().padStart(4)}  TOTAL products`);
+console.log(`  ----\n  ${report.total.toString().padStart(4)}  TOTAL products`);
 console.log(`  recovered (date-corruption): ${report.recovered.length}`);
 console.log(`  rejected: ${report.rejected.length}`);
-if (report.recovered.length)
-  console.log('  recovered rows:', report.recovered.map(r => `${r.from}→${r.to}`).join(', '));
-if (report.rejected.length)
-  console.log('  first rejections:', report.rejected.slice(0, 5));
+if (report.rejected.length) console.log('  first rejections:', report.rejected.slice(0, 8));
 console.log(`\n  SQL written to scripts/import/out/ (${report.files.length} files)`);
