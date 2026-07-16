@@ -245,3 +245,56 @@ table (from §2) holds per-part images later.
 - **Cross-check** the `-1` PowerA suffix against the column group.
 - **Idempotent** upsert on `part_number`; dedupe re-exported source files.
 - **Report** counts: inserted / updated / rejected (with reason) / recovered (flagged).
+
+### 8.9 Full file set spans two layouts and two unit systems
+
+The complete endmill catalog (solid-carbide-end-mills tree) arrives as ~15 CSVs covering these
+categories, each in Fractional (imperial) and/or MET (metric) form:
+
+`Square`, `Ball`, `Corner Radius`, `Double-End Square`, `6-Flute Square`,
+`Extra-Long Square`, `Extra-Long Ball`, `50° Helix Corner Radius`.
+
+**Two source layouts** — the importer supports both, declared per file:
+- **matrix** (most files): dimension columns + flute-count part-number columns. Requires unpivot
+  (§8.1). `flutes` and `coating` derive from the column header.
+- **row** (e.g. `MET 50° Helix Corner`): one row = one product; `Flutes`, `Radius` are explicit
+  data columns and the part number sits in a single column. `flutes` varies by row (6 or 8).
+
+### 8.10 Unit system is a property of the file, not the value
+
+`OD="1"` means **1 inch** in a Fractional file but **1 mm** in a MET file. Each source file
+declares its `measurement_system` (`Imperial` | `Metric`), and every product stores it. Canonical
+numeric dimensions are stored in a single unit (inches; mm ÷ 25.4) for cross-catalog range
+filtering, while the display string preserves the native unit (`"1/4""`, `"6 mm"`). MET dimensions
+are plain decimals (`1.5`, `38`); Fractional are fraction strings (`1-1/2`).
+
+### 8.11 Tolerant header parsing
+
+Matrix headers are inconsistently spelled across files and must be parsed with tolerance, not
+exact match. Observed variants for the same concept:
+`2-Flute`, `2Flute`, `2 Flute - Uncoated`, `2-Flute PowerA`, `2Flute - PowerA`,
+`2 Flute- Power A`, `4-Flute power A`. The parser extracts (a) flute count via `\d+`, and
+(b) coating = PowerA if the header matches `/power\s*-?\s*a/i` else Uncoated.
+
+### 8.12 Attribute & category additions
+
+- `measurement_system` — enum(Imperial, Metric) — filterable — on every product.
+- `helix_angle` — numeric — degrees — Corner Radius / 50° Helix subcategory (50 for that file).
+- `flutes` domain widens to {2, 3, 4, 6, 8}.
+- `corner_radius` present on Corner Radius and 50° Helix categories (mm or inch per file).
+
+### 8.13 Per-file import descriptor
+
+Each CSV maps to a small declaration consumed by one generic importer:
+
+```
+{ file, category, measurement_system: 'Imperial'|'Metric',
+  layout: 'matrix'|'row',
+  dimension_columns: ['OD','LOC','SHK','OAL', ...],
+  // matrix: part_columns → {flutes, coating} derived from header
+  // row:    part_column + explicit flutes_column / radius_column
+}
+```
+
+Fifteen messy CSVs become fifteen small descriptors feeding one validated, idempotent importer —
+not fifteen bespoke scripts.
