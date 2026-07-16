@@ -31,3 +31,6 @@ Thumbs.db
 # Import working files (raw CSVs may contain supplier data)
 scripts/data/*.csv
 !scripts/data/sample.csv
+
+# Generated importer SQL output (regenerable from CSVs; data lives in Supabase)
+scripts/import/out/
