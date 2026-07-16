@@ -2,6 +2,7 @@
 node_modules/
 .pnp
 .pnp.js
+template/
 
 # Env & secrets — service-role key must NEVER be committed
 .env

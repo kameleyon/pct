@@ -1,20 +1,17 @@
 import type { Metadata } from 'next';
-import { Archivo } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 
-const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-archivo' });
-
 export const metadata: Metadata = {
   title: 'Precise Cut Tools — Precision Cutting Tools',
   description:
-    'Solid carbide end mills and precision cutting tools. Factory-direct, made in the USA. Same-day pickup in Largo, Florida.',
+    'Over 27,500 cutting tools and industrial supplies stocked in Largo, Florida — plus factory-direct access to 120+ trusted brands.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={archivo.variable}>
+    <html lang="en">
       <body>
         <Header />
         {children}
