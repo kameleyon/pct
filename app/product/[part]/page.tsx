@@ -44,7 +44,7 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
         <span style={{ color: 'var(--text)' }}>{product.part_number}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 44, alignItems: 'start' }}>
+      <div className="two-col">
         {/* gallery */}
         <div style={{ background: 'var(--surface)', borderRadius: 24, padding: 16, display: 'grid', gridTemplateColumns: '72px 1fr', gap: 14 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -102,7 +102,7 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
       {/* specs table */}
       <section style={{ marginTop: 44 }}>
         <h2 style={{ fontSize: 22, margin: '0 0 18px' }}>Specifications</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '0 40px', background: 'var(--surface)', borderRadius: 20, padding: '8px 24px' }}>
+        <div className="spec-grid" style={{ background: 'var(--surface)', borderRadius: 20, padding: '8px 24px' }}>
           {rows.map(([k, v], i) => (
             <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', borderBottom: i < rows.length - (rows.length % 2 === 0 ? 2 : 1) ? '1px solid rgba(43,42,38,.07)' : undefined }}>
               <span style={{ fontSize: 13.5, color: 'var(--muted)', fontWeight: 600 }}>{k}</span>

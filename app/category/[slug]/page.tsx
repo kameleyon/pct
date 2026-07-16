@@ -57,13 +57,13 @@ export default async function CategoryPage({
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 28, alignItems: 'start' }}>
+      <div className="browse-layout">
         <FilterRail facets={facets} />
         <div>
           {items.length === 0 ? (
             <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 48, textAlign: 'center', color: 'var(--muted)' }}>No products match these filters.</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, gridAutoRows: '1fr' }}>
+            <div className="browse-grid">
               {items.map((p) => <ProductCard key={p.id} product={p} categorySlug={slug} />)}
             </div>
           )}

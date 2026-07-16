@@ -8,7 +8,7 @@ const Chevron = ({ s = 15 }: { s?: number }) => <svg width={s} height={s} viewBo
 export function Hero() {
   return (
     <section className="hero-a" style={{ background: 'var(--color-surface)', borderRadius: 28 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 40px' }}>
+      <div className="hero-left" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--color-gold-700)', background: 'var(--color-gold-100)', padding: '7px 14px', borderRadius: 999, marginBottom: 24 }}>Precision cutting tools · factory direct</div>
         <h1 style={{ lineHeight: 1.0, letterSpacing: '-.02em', margin: '0 0 20px', color: 'var(--color-text)' }}>The right tool.<br /><span style={{ color: 'var(--color-accent)' }}>In stock.</span> On time.</h1>
         <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--muted)', maxWidth: 460, margin: '0 0 30px' }}>Over 27,500 cutting tools and industrial supplies stocked in Largo, Florida — plus factory-direct access to 120+ trusted brands.</p>
@@ -16,10 +16,10 @@ export function Hero() {
           <Link href="/category/square-end-mills" className="h-green" style={{ height: 52, padding: '0 26px', fontSize: 15, fontWeight: 600, color: '#fff', background: 'var(--color-accent)', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center' }}>Shop Florida Stock<ArrowR /></Link>
           <Link href="/category/square-end-mills" style={{ height: 52, padding: '0 24px', fontSize: 15, fontWeight: 600, color: 'var(--color-text)', background: '#fff', border: '1px solid rgba(43,42,38,.1)', borderRadius: 14, display: 'inline-flex', alignItems: 'center' }}>Browse Brands</Link>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', background: 'var(--color-surface-2)', borderRadius: 18, padding: '20px 4px' }}>
+        <div className="hero-stats" style={{ background: 'var(--color-surface-2)', borderRadius: 18, padding: '20px 4px' }}>
           {[['27,500+', 'In local FL stock'], ['120+', 'Trusted brands'], ['Same-day', 'Largo pickup']].map(([a, b], i) => (
-            <div key={i} style={{ padding: '0 20px', borderLeft: i ? '1px solid rgba(43,42,38,.09)' : undefined }}>
-              <div style={{ fontSize: 28, fontWeight: 600, color: 'var(--color-accent)', lineHeight: 1 }}>{a}</div>
+            <div key={i} style={{ borderLeft: i ? '1px solid rgba(43,42,38,.09)' : undefined }}>
+              <div className="hstat-num" style={{ fontWeight: 600, color: 'var(--color-accent)' }}>{a}</div>
               <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginTop: 5 }}>{b}</div>
             </div>
           ))}
@@ -47,7 +47,7 @@ function SectionHead({ eyebrow, title, cta }: { eyebrow: string; title: string; 
 
 export function CategoryGrid({ categories }: { categories: Category[] }) {
   return (
-    <section style={{ padding: '56px 0 8px' }}>
+    <section className="section-pad">
       <SectionHead eyebrow="Browse the catalog" title="Shop by category" cta="View all categories" />
       <div className="cat-grid">
         {categories.map((c) => (
@@ -66,7 +66,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
 
 export function FeaturedProducts({ products, slugById }: { products: Product[]; slugById: Record<string, string> }) {
   return (
-    <section style={{ background: 'var(--color-surface)', borderRadius: 28, padding: 40, marginTop: 40 }}>
+    <section className="pad-lg" style={{ background: 'var(--color-surface)', borderRadius: 28, marginTop: 40 }}>
       <SectionHead eyebrow="In stock now" title="Customer favorites" cta="Shop all in-stock" />
       <div className="feat-grid">
         {products.map((p) => <ProductCard key={p.id} product={p} categorySlug={slugById[p.category_id] ?? 'square-end-mills'} />)}
@@ -78,7 +78,7 @@ export function FeaturedProducts({ products, slugById }: { products: Product[]; 
 export function DealsBanner() {
   return (
     <section className="deals" style={{ background: 'var(--color-accent-800)', borderRadius: 28, padding: 8, alignItems: 'center', overflow: 'hidden', marginTop: 40 }}>
-      <div style={{ padding: '48px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div className="deals-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <span style={{ alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', color: '#fff', background: 'var(--color-gold-2)', padding: '6px 13px', borderRadius: 999, marginBottom: 20 }}>Florida Stock</span>
         <h2 style={{ lineHeight: .98, margin: 0, color: '#fff' }}>Liquidation<br /><span style={{ color: 'var(--color-gold-2)' }}>Deals</span></h2>
         <p style={{ fontSize: 16, color: 'rgba(255,255,255,.8)', margin: '16px 0 28px', maxWidth: 420 }}>Brand-new tooling, below original selling prices. Limited quantities — once it&apos;s gone, it&apos;s gone.</p>
@@ -112,7 +112,7 @@ export function VipBand() {
     { name: 'Platinum', pct: '5%', color: '#e5e9ec', note: 'Top-tier pricing + shipping perks' },
   ];
   return (
-    <section style={{ background: '#103b24', borderRadius: 28, padding: 44, marginBottom: 48 }}>
+    <section className="pad-band" style={{ background: '#103b24', borderRadius: 28, marginBottom: 48 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, marginBottom: 30 }}>
         <div>
           <h2 style={{ fontSize: 38, margin: 0, color: '#fff' }}>PCT <span style={{ color: 'var(--color-gold-2)' }}>VIP</span> Program</h2>

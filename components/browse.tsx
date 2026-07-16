@@ -32,7 +32,7 @@ export function FilterRail({ facets }: { facets: { flutes: number[]; coatings: s
   const anyFilter = ['flutes', 'coating', 'system'].some((k) => params.get(k));
 
   return (
-    <aside style={{ background: 'var(--surface)', borderRadius: 22, padding: 22, position: 'sticky', top: 70 }}>
+    <aside className="filter-rail" style={{ background: 'var(--surface)', borderRadius: 22, padding: 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={{ fontSize: 14, fontWeight: 600 }}>Filters</span>
         {anyFilter && <span onClick={() => router.push(pathname)} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--muted-2)' }}>Clear all</span>}

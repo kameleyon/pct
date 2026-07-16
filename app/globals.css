@@ -7,6 +7,10 @@
   --color-accent-100:#E4EDE5;
   --color-gold:#bf9b30; --color-gold-2:#d4af37; --color-gold-700:#a67f26; --color-gold-100:#F1E7CB;
   --muted:#6E6A62; --muted-2:#9a968d; --line:rgba(43,42,38,.08);
+  /* aliases used by browse/product pages */
+  --surface:#FBF8F1; --surface-2:#FCFAF4; --text:#2B2A26;
+  --green:#1a5c34; --green-600:#154a2a; --green-700:#103b21; --green-800:#0c2c19; --green-100:#E4EDE5;
+  --gold:#bf9b30; --gold-2:#d4af37; --gold-700:#a67f26; --gold-100:#F1E7CB;
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -39,37 +43,73 @@ input,select{outline:none}
 .prod-card{transition:border-color .18s}.prod-card:hover{border-color:rgba(43,42,38,.2)!important}
 
 /* ============ RESPONSIVE ============ */
+html,body{overflow-x:hidden;max-width:100%}
+
 .hero-a{display:grid;grid-template-columns:1.05fr .95fr;overflow:hidden}
-.hero-a h1{font-size:clamp(34px,5.4vw,60px)}
+.hero-a h1{font-size:clamp(32px,5.2vw,60px)}
+.hero-left{padding:48px 40px}
+.hero-a>*{min-width:0}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr)}
+.hero-stats>*{min-width:0;padding:0 20px}
+.hstat-num{font-size:28px;line-height:1}
 .deals{display:grid;grid-template-columns:.82fr 1.18fr;gap:8px}
-.deals h2{font-size:clamp(34px,4.4vw,50px)}
+.deals h2{font-size:clamp(32px,4.4vw,50px)}
+.deals-text{padding:48px 40px}
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;grid-auto-rows:1fr}
 .vip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding:52px 44px 0}
+.foot-bottom{padding:20px 44px}
+.pad-lg{padding:40px}
+.pad-band{padding:44px}
+.section-pad{padding:56px 0 8px}
 .mainbar{display:flex;align-items:center;gap:28px}
 .mainbar-search{flex:1;max-width:640px}
-.section-h1{font-size:clamp(28px,4vw,32px)}
+.section-h1{font-size:clamp(26px,4vw,32px)}
+.browse-layout{display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start}
+.browse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;grid-auto-rows:1fr}
+.filter-rail{position:sticky;top:70px}
+.noscroll::-webkit-scrollbar{display:none}
+/* prevent grid/flex blowout: let children shrink below content width */
+.cat-grid>*,.feat-grid>*,.vip-grid>*,.browse-grid>*,.foot-grid>*,.browse-layout>*{min-width:0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
+.two-col>*{min-width:0}
+.spec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
+@media (max-width:860px){ .two-col{grid-template-columns:1fr;gap:24px} }
+@media (max-width:640px){ .spec-grid{grid-template-columns:1fr} }
 
+@media (max-width:1100px){ .browse-grid{grid-template-columns:repeat(2,1fr)} }
 @media (max-width:1000px){
   .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .feat-grid{grid-template-columns:repeat(2,1fr)}
   .foot-grid{grid-template-columns:1fr 1fr;gap:28px}
 }
 @media (max-width:860px){
   .hero-a{grid-template-columns:1fr}
-  .hero-a .hero-img{min-height:340px!important}
+  .hero-left{padding:36px 22px}
+  .hero-img{min-height:300px!important}
   .deals{grid-template-columns:1fr}
-  .feat-grid{grid-template-columns:repeat(2,1fr)}
+  .deals-text{padding:30px 22px}
   .vip-grid{grid-template-columns:repeat(2,1fr)}
+  .pad-lg{padding:22px}
+  .pad-band{padding:26px}
+  .browse-layout{grid-template-columns:1fr}
+  .filter-rail{position:static}
   .mainbar{flex-wrap:wrap}
   .mainbar-search{order:3;flex:1 1 100%;max-width:none}
 }
 @media (max-width:680px){
   .wrap{padding:0 16px}
   .cat-grid{grid-template-columns:repeat(2,1fr)}
-  .foot-grid{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr;padding:36px 20px 0}
+  .foot-bottom{padding:18px 20px}
+  .util-hide{display:none!important}
+  .section-pad{padding:36px 0 8px}
+  .hero-stats>*{padding:0 10px}
+  .hstat-num{font-size:19px}
 }
-@media (max-width:480px){
+@media (max-width:640px){
   .feat-grid{grid-template-columns:1fr}
+  .browse-grid{grid-template-columns:1fr}
+  .vip-grid{grid-template-columns:1fr}
 }
-.noscroll::-webkit-scrollbar{display:none}
