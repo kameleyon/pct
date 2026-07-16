@@ -164,3 +164,84 @@ these can be added later without a foundation change.
   `category_attributes` and reporting inserted/updated/rejected counts.
 - Stripe payment status is writable only by the signature-verified webhook.
 - Service-role key is never exposed to the browser bundle.
+
+---
+
+## 8. Concrete Data Model & Import Mapping (from real CSVs — 2026-07-15)
+
+Reviewed three real source files (Square, Ball, Corner Radius endmills). These findings refine
+the assumptions in §2 and §4; where they differ, this section is authoritative.
+
+### 8.1 Source files are a matrix — the importer must UNPIVOT
+
+Each source row is one **geometry**; the flute-count columns hold **part numbers**, not counts.
+
+- **Square & Ball** columns: `OD, LOC, SHK, OAL, 2-Flute, 3-Flute, 4-Flute, 2-Flute PowerA,
+  3-Flute PowerA, 4-Flute PowerA`.
+- **Corner Radius** columns: `OD, LOC, SHK, OAL, Radius, 2-Flute, 4-Flute, 2-Flute PowerA,
+  4-Flute PowerA`.
+
+Every **non-empty** part-number cell becomes exactly one `products` row:
+`part_number` = the cell; `flutes` = parsed from the column header (2/3/4);
+`coating` = `PowerA (AlTiN)` if a PowerA column else `Uncoated`. Empty cell = that
+configuration does not exist for the geometry and is skipped. (~1,400 products across the three
+files.)
+
+### 8.2 Domain facts (confirmed via mastercuttool.com)
+
+- **Material:** solid micro-grain **Carbide** for all parts in these files (`material = 'Carbide'`).
+- **PowerA** is Mastercut's proprietary name for their **AlTiN coating** — a coating variant, not a
+  separate product line. `coating ∈ {'Uncoated', 'PowerA (AlTiN)'}`.
+- **PowerA part numbers carry a `-1` suffix** (e.g. `206-252` → `206-252-1`). Used as an import
+  cross-check.
+- Flute options: 2, 3, 4. Metric (mm) diameters exist on the live site but are not in these CSVs;
+  the schema must accommodate them later without change.
+
+### 8.3 Category hierarchy
+
+`Endmills` (parent) → `Square Endmills`, `Ball Endmills`, `Corner Radius Endmills`.
+Corner Radius adds one attribute (`corner_radius`) — a single extra `category_attributes` row.
+
+### 8.4 `category_attributes` seed
+
+| key | label | data_type | unit | filterable | notes |
+|---|---|---|---|---|---|
+| od | Cutting Diameter | numeric | in | yes | dual-stored (see §8.5) |
+| loc | Length of Cut | numeric | in | yes | dual-stored |
+| shk | Shank Diameter | numeric | in | yes | dual-stored |
+| oal | Overall Length | numeric | in | yes | dual-stored |
+| flutes | Flutes | enum(2,3,4) | — | yes | from column header |
+| coating | Coating | enum(Uncoated, PowerA (AlTiN)) | — | yes | from column group |
+| corner_radius | Corner Radius | numeric | in | yes | Corner Radius subcategory only |
+
+### 8.5 Dimensions are dual-stored
+
+Fractional inch strings (`1/32`, `1-1/2`) are human-readable but unusable for range filtering.
+Each dimension is stored **twice**: a parsed `NUMERIC` value (e.g. `od_in = 0.03125`) for
+filtering/sorting, plus the original display string (`"1/32"`) for rendering. A fraction parser
+handles `1-1/2`→1.5, `1/32`→0.03125, `.015`→0.015, and future `8mm`→0.315.
+
+### 8.6 `products` column refinements
+
+Add to §2's `products`: `material TEXT DEFAULT 'Carbide'`, `coating TEXT`, `flutes SMALLINT`,
+`price NUMERIC(10,2)`, `sale_price NUMERIC(10,2)`,
+`discount_percentage NUMERIC GENERATED ALWAYS AS
+(CASE WHEN price > 0 AND sale_price IS NOT NULL THEN round((price - sale_price) / price * 100, 0)
+ ELSE NULL END) STORED`, and `primary_image_url TEXT`.
+Price/stock are nullable now, filled later (browse-/quote-only until priced).
+
+### 8.7 Images
+
+Each category has at least one representative image (`categories.image_url`). Products default to
+their category image via `primary_image_url` until per-part imagery exists; the `product_images`
+table (from §2) holds per-part images later.
+
+### 8.8 Import validation rules
+
+- **Detect corrupted cells**: an ISO timestamp where a fraction is expected (observed: Corner
+  Radius rows where `LOC` = `2020-01-02T08:00:00.000Z`, a Sheets fraction→date corruption of
+  `1/2`). Recover (`Jan 2` → `1/2`) but **flag** in the report — never silently load.
+- **Reject** rows whose required dimension fails fraction parsing.
+- **Cross-check** the `-1` PowerA suffix against the column group.
+- **Idempotent** upsert on `part_number`; dedupe re-exported source files.
+- **Report** counts: inserted / updated / rejected (with reason) / recovered (flagged).
