@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getProductByPart, getCategoryById, BRAND, type Product } from '@/lib/catalog';
-import { ToolGlyph } from '@/components/ToolGlyph';
+import { getProductByPart, getCategoryById, categoryImage, BRAND, type Product } from '@/lib/catalog';
 import { Heart, Coupon, Star, Cart, Truck, Shield, Check } from '@/components/icons';
 
 export const revalidate = 300;
@@ -50,10 +49,16 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
         <div style={{ background: 'var(--surface)', borderRadius: 24, padding: 16, display: 'grid', gridTemplateColumns: '72px 1fr', gap: 14 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} style={{ aspectRatio: '1/1', borderRadius: 13, overflow: 'hidden', background: '#fff', padding: 8, outline: i === 0 ? '2px solid var(--green)' : undefined, outlineOffset: -2 }}><ToolGlyph slug={category?.slug ?? 'square'} /></div>
+              <div key={i} style={{ aspectRatio: '1/1', borderRadius: 13, overflow: 'hidden', background: '#fff', padding: 8, outline: i === 0 ? '2px solid var(--green)' : undefined, outlineOffset: -2 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={categoryImage(category?.slug ?? '')} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
             ))}
           </div>
-          <div style={{ aspectRatio: '1/1', borderRadius: 18, overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', padding: 48 }}><ToolGlyph slug={category?.slug ?? 'square'} /></div>
+          <div style={{ aspectRatio: '1/1', borderRadius: 18, overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', padding: 48 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={categoryImage(category?.slug ?? '')} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
         </div>
 
         {/* info */}

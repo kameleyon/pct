@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { type Product, specSummary, BRAND } from '@/lib/catalog';
-import { ToolGlyph } from './ToolGlyph';
+import { type Product, specSummary, BRAND, categoryImage } from '@/lib/catalog';
 import { Heart, Coupon, Truck, Check, ArrowRight, Cart } from './icons';
 
 export function ProductCard({ product, categorySlug }: { product: Product; categorySlug: string }) {
@@ -20,8 +19,9 @@ export function ProductCard({ product, categorySlug }: { product: Product; categ
 
       <Link href={`/product/${encodeURIComponent(product.part_number)}`} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 14, flex: 1, color: 'inherit' }}>
         {/* image */}
-        <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: 'var(--surface)', borderRadius: 14, overflow: 'hidden', display: 'grid', placeItems: 'center', padding: 18 }}>
-          <ToolGlyph slug={categorySlug} />
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: '#fff', borderRadius: 14, overflow: 'hidden', display: 'grid', placeItems: 'center', padding: 18 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={categoryImage(categorySlug)} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           <span style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 8.5, fontWeight: 600, color: 'var(--gold-700)' }}>Representative image — see specs for exact geometry</span>
         </div>
         {/* title */}

@@ -27,9 +27,8 @@ export async function Header() {
       {/* main bar */}
       <div className="wrap" style={{ padding: '18px 32px', display: 'flex', alignItems: 'center', gap: 28 }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 13, flex: 'none' }}>
-          <span style={{ height: 52, width: 52, borderRadius: 14, background: 'var(--green)', display: 'grid', placeItems: 'center', flex: 'none' }}>
-            <span style={{ color: 'var(--gold-2)', fontWeight: 700, fontSize: 20, letterSpacing: '.02em' }}>PCT</span>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/pct-logo.png" alt="Precise Cut Tools" style={{ height: 54, width: 54, objectFit: 'contain', display: 'block', flex: 'none' }} />
           <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
             <span style={{ fontWeight: 600, fontSize: 21, color: 'var(--green)' }}>Precise Cut Tools</span>
             <span style={{ fontSize: 10.5, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--gold-700)', marginTop: 6, fontWeight: 600 }}>Precision Cutting Tools</span>

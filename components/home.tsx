@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { type Category, type Product } from '@/lib/catalog';
 import { ProductCard } from './ProductCard';
-import { ToolGlyph } from './ToolGlyph';
-import { ArrowRight, ChevronRight, Box, Truck, Shield, External, Star } from './icons';
+import { ArrowRight, ChevronRight, External } from './icons';
 
 const upper = { fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase' as const };
 
@@ -28,17 +27,10 @@ export function Hero() {
           ))}
         </div>
       </div>
-      <div style={{ position: 'relative', background: 'linear-gradient(150deg,#154a2a,#0c2c19)', display: 'grid', placeItems: 'center', minHeight: 520, padding: 40 }}>
-        <div style={{ width: '62%', maxWidth: 280, opacity: .96 }}><ToolGlyph slug="square" /></div>
+      <div style={{ position: 'relative', background: 'var(--surface)', display: 'grid', placeItems: 'center', minHeight: 520, padding: 48 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/slots/Standard-Square-Endmill.jpg" alt="Solid carbide end mill" style={{ width: '100%', maxWidth: 500, objectFit: 'contain' }} />
         <span style={{ position: 'absolute', top: 24, right: 24, ...upper, color: '#fff', background: 'var(--gold)', padding: '7px 14px', borderRadius: 999 }}>Made in USA</span>
-        <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20, background: 'rgba(255,255,255,.1)', borderRadius: 18, padding: '14px 20px', display: 'flex', gap: 28, backdropFilter: 'blur(4px)' }}>
-          {[['Carbide', 'Micro-grain'], ['2–8', 'Flute options'], ['PowerA', 'AlTiN coating']].map(([a, b], i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--gold-2)' }}>{a}</span>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,.72)', fontWeight: 600, lineHeight: 1.2 }}>{b}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -88,16 +80,11 @@ export function FeaturedProducts({ products, slugById }: { products: Product[]; 
 
 export function DealsBanner() {
   return (
-    <section style={{ background: 'var(--green-800)', borderRadius: 28, padding: 8, display: 'grid', gridTemplateColumns: '0.82fr 1.18fr', gap: 8, alignItems: 'center', overflow: 'hidden', marginTop: 40 }}>
-      <div style={{ padding: '48px 40px' }}>
-        <span style={{ display: 'inline-block', ...upper, color: '#fff', background: 'var(--gold)', padding: '6px 13px', borderRadius: 999, marginBottom: 20 }}>Factory Direct</span>
-        <h2 style={{ fontSize: 46, lineHeight: .98, margin: 0, color: '#fff' }}>Built to spec.<br /><span style={{ color: 'var(--gold-2)' }}>Priced to move.</span></h2>
-        <p style={{ fontSize: 16, color: 'rgba(255,255,255,.8)', margin: '16px 0 28px', maxWidth: 420 }}>Volume pricing on every geometry — request a quote on any part number and we'll turn it around fast.</p>
-        <Link href="/category/square-end-mills" className="btn-gold" style={{ height: 52, padding: '0 26px', fontSize: 15, fontWeight: 600, color: '#fff', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 9 }}>Request a quote<ArrowRight size={16} strokeWidth={2.4} /></Link>
-      </div>
-      <div style={{ position: 'relative', aspectRatio: '16/9', background: 'linear-gradient(135deg,#0f3320,#0c2c19)', borderRadius: 22, display: 'grid', placeItems: 'center', padding: 30 }}>
-        <div style={{ width: '46%', maxWidth: 200, opacity: .92 }}><ToolGlyph slug="ball" /></div>
-      </div>
+    <section style={{ marginTop: 40 }}>
+      <Link href="/category/square-end-mills" style={{ display: 'block', borderRadius: 28, overflow: 'hidden' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/floridaDeal.png" alt="Florida Stock — Liquidation Deals. Brand-new tooling below original selling prices." style={{ width: '100%', height: 'auto', display: 'block' }} />
+      </Link>
     </section>
   );
 }
@@ -115,30 +102,10 @@ export function CapabilityStrip() {
 }
 
 export function VipBand() {
-  const tiers = [
-    { name: 'Member', pct: '1%', color: '#cbb26a', note: 'Every online account — instant access to catalog pricing and order history.' },
-    { name: 'Silver', pct: '2%', color: '#c9c9c9', note: 'Rolling 12-month purchases unlock member pricing and priority stock.' },
-    { name: 'Gold', pct: '3%', color: 'var(--gold-2)', note: 'Free shipping offers and dedicated tooling support.' },
-    { name: 'Platinum', pct: '4%', color: '#e6e6e6', note: 'Best pricing, first access to new geometries, and volume terms.' },
-  ];
   return (
-    <section style={{ background: 'var(--green-700)', borderRadius: 28, padding: 44, marginBottom: 48 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, marginBottom: 30 }}>
-        <div>
-          <h2 style={{ fontSize: 38, margin: 0, color: '#fff' }}>PCT <span style={{ color: 'var(--gold-2)' }}>VIP</span> Program</h2>
-          <p style={{ fontSize: 16, color: 'rgba(255,255,255,.8)', margin: '12px 0 0', maxWidth: 520 }}>More savings, more rewards. VIP pricing scales with your rolling 12-month purchases — and it starts with every online account.</p>
-        </div>
-        <Link href="/" className="btn-gold" style={{ height: 52, padding: '0 26px', fontSize: 14, fontWeight: 600, color: '#fff', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 8 }}>View VIP benefits<ArrowRight size={16} strokeWidth={2.4} /></Link>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
-        {tiers.map((t) => (
-          <div key={t.name} style={{ background: 'rgba(255,255,255,.06)', borderRadius: 20, padding: 24 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, ...upper, color: t.color }}><span style={{ width: 10, height: 10, borderRadius: '50%', background: t.color }} />{t.name}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 14 }}><span style={{ fontSize: 40, fontWeight: 600, color: '#fff', lineHeight: 1 }}>{t.pct}</span><span style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', fontWeight: 600 }}>in rewards</span></div>
-            <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,.64)', marginTop: 14, lineHeight: 1.45 }}>{t.note}</div>
-          </div>
-        ))}
-      </div>
+    <section style={{ margin: '40px 0 48px', display: 'grid', placeItems: 'center' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/vipProgram.png" alt="New VIP Program — Bronze 1%, Silver 2%, Gold 4%, Platinum 5%. VIP pricing and shipping perks based on rolling 12-month purchases." style={{ width: '100%', maxWidth: 900, height: 'auto', display: 'block', borderRadius: 28 }} />
     </section>
   );
 }

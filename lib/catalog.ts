@@ -191,3 +191,29 @@ export function specSummary(p: Product): string {
 }
 
 export const BRAND = 'Mastercut';
+
+// Real product photography (dropped into public/slots/), mapped by geometry.
+const CATEGORY_IMAGE: Record<string, string> = {
+  'square-end-mills': '/slots/Standard-Square-Endmill.jpg',
+  'ball-end-mills': '/slots/Standard-Ball-Endmill.jpg',
+  'corner-radius-end-mills': '/slots/Standard-Corner-Radius.jpg',
+  'double-end-square-end-mills': '/slots/DoubleEnd-Square2flute.jpg',
+  '6-flute-square-end-mills': '/slots/6-flute-square.jpg',
+  '50-helix-corner-radius-end-mills': '/slots/Standard-Corner-Radius.jpg',
+  'square-straight-flute-end-mills': '/slots/Standard-Square-Endmill.jpg',
+  'ball-straight-flute-end-mills': '/slots/Standard-Ball-Endmill.jpg',
+  'double-end-ball-end-mills': '/slots/Standard-Ball-Endmill.jpg',
+  'double-end-square-with-flat': '/slots/DoubleEnd-Square2flute.jpg',
+  'double-end-ball-with-flat': '/slots/Standard-Ball-Endmill.jpg',
+  'square-mini-mills': '/slots/Standard-Square-Endmill.jpg',
+  'ball-mini-mills': '/slots/Standard-Ball-Endmill.jpg',
+  'drill-mills': '/slots/Standard-Square-Endmill.jpg',
+  'square-taper-mills': '/slots/Standard-Square-Endmill.jpg',
+  'ball-taper-mills': '/slots/Standard-Ball-Endmill.jpg',
+  'short-flute-square-end-mills': '/slots/Standard-Square-Endmill.jpg',
+  'short-flute-ball-end-mills': '/slots/Standard-Ball-Endmill.jpg',
+  'short-flute-corner-radius-end-mills': '/slots/Standard-Corner-Radius.jpg',
+};
+
+export const categoryImage = (slug: string): string =>
+  CATEGORY_IMAGE[slug] ?? '/slots/Standard-Square-Endmill.jpg';

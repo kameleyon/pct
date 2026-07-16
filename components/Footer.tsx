@@ -13,9 +13,8 @@ export function Footer() {
       <div className="wrap" style={{ padding: '56px 32px 32px', display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: 40 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <span style={{ height: 44, width: 44, borderRadius: 12, background: 'rgba(255,255,255,.08)', display: 'grid', placeItems: 'center' }}>
-              <span style={{ color: 'var(--gold-2)', fontWeight: 700, fontSize: 16 }}>PCT</span>
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/pct-logo.png" alt="Precise Cut Tools" style={{ height: 44, width: 44, objectFit: 'contain', display: 'block' }} />
             <span style={{ fontWeight: 600, fontSize: 18 }}>Precise Cut Tools</span>
           </div>
           <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 13.5, lineHeight: 1.6, maxWidth: 320, margin: '0 0 18px' }}>
