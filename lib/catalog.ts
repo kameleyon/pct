@@ -272,6 +272,21 @@ const CATEGORY_IMAGE: Record<string, string> = {
   'short-flute-square-end-mills': '/slots/Standard-Square-Endmill.jpg',
   'short-flute-ball-end-mills': '/slots/Standard-Ball-Endmill.jpg',
   'short-flute-corner-radius-end-mills': '/slots/Standard-Corner-Radius.jpg',
+  // High Performance Routers (1-flute lines)
+  'r-upcut-spiral': '/slots/R-Single-Flute-Upcut-Spiral-Wood-1-768x102.jpg',
+  'r-downcut-spiral': '/slots/R-Single-Downcut-Spiral-Endmill-End-Wood-768x138.jpg',
+  'r-o-flute-upcut-spiral': '/slots/R-O-Flute-Upcut-Spiral-768x84.jpg',
+  'r-o-flute-downcut-spiral': '/slots/R-O-Flute-Downcut-Spiral-768x106.jpg',
+  'r-o-flute-straight': '/slots/R-O-Flute-Straight-Cut-Crescent-End-1-768x128.jpg',
+  'r-v-flute-straight': '/slots/R-V-Flute-Straight-Cut-Crescent-End-768x103.jpg',
+  'r-o-flute-straight-edge-rounding': '/slots/R-O-Flute-Straight-Cut-Edge-Rounding-1-768x122.jpg',
+  'r-o-flute-spiral-edge-rounding': '/slots/R-O-Flute-Spiral-Cut-Edge-Rounding-1-768x87.jpg',
+  'r-compression': '/slots/R-1-Flute-Compression-Spiral-Endmill-End-1-768x110.jpg',
+  'r-ball-compression': '/slots/Ball-Compression-Spiral-Endmill-End-21-768x89.jpg',
+  'r-mortise-compression': '/slots/R-Single-Flute-Mortise-Compression-1-768x107.jpg',
+  'r-ofx-upcut': '/slots/R-1-Flute-Upcut-OFX-1-768x161.jpg',
+  'r-ofx-downcut': '/slots/R-1-Flute-Downcut-OFX-1-768x133.jpg',
+  'r-veining-bits': '/slots/R-Veining-Bit-768x139.jpg',
 };
 
 export const categoryImage = (slug: string): string =>

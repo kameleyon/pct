@@ -47,7 +47,7 @@ export function parseFraction(raw) {
 // --- metric decimal → millimetres ---
 export function parseMetricMm(raw) {
   if (raw == null) return null;
-  const s = String(raw).trim();
+  const s = String(raw).trim().replace(',', '.'); // tolerate European comma decimals ("2,00")
   if (s === '') return null;
   const n = parseFloat(s);
   return Number.isFinite(n) ? n : null;

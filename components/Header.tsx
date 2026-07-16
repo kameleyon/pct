@@ -4,7 +4,7 @@ const nav = [
   ['End Mills', '/category/end-mills'],
   ['High Performance End Mills', '/category/high-performance-end-mills'],
   ['Pro+ Performance End Mills', '#'],
-  ['High Performance Routers', '#'],
+  ['High Performance Routers', '/category/high-performance-routers'],
   ['Drills', '#'],
   ['Reamers & Threadmills', '#'],
   ['Burs & Fiberglass Routing', '#'],

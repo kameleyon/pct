@@ -19,6 +19,20 @@ export const GEOMETRY = {
   'hp-twister-mills': 'Twistermill',
   'hp-hyper-mills': 'Hypermill',
   'hp-alumazips': 'Alumazip',
+  'r-v-flute-straight': 'V-Flute Straight Router',
+  'r-o-flute-straight': 'O-Flute Straight Router',
+  'r-o-flute-straight-edge-rounding': 'O-Flute Straight Edge-Rounding Router',
+  'r-o-flute-spiral-edge-rounding': 'O-Flute Spiral Edge-Rounding Router',
+  'r-o-flute-upcut-spiral': 'O-Flute Upcut Spiral Router',
+  'r-o-flute-downcut-spiral': 'O-Flute Downcut Spiral Router',
+  'r-upcut-spiral': 'Upcut Spiral Router',
+  'r-downcut-spiral': 'Downcut Spiral Router',
+  'r-veining-bits': 'Veining Bit',
+  'r-compression': 'Compression Router',
+  'r-ball-compression': 'Ball Compression Router',
+  'r-mortise-compression': 'Mortise Compression Router',
+  'r-ofx-upcut': 'OFX Upcut Router',
+  'r-ofx-downcut': 'OFX Downcut Router',
 };
 
 const V = 'hp-v4-end-mills', V5 = 'hp-v5-end-mills', HY5 = 'hp-hy5-end-mills', F45 = 'hp-f45-end-mills',
@@ -86,6 +100,31 @@ export const DESCRIPTORS = [
   // ---- Alumazips (2-flute) ----
   { file: 'FRT Alumazips.csv', category: AL, system: 'Imperial', fixedFlutes: 2 },
   { file: 'MET Alumazips.csv', category: AL, system: 'Metric', fixedFlutes: 2 },
+
+  // ==== HIGH PERFORMANCE ROUTERS — 1-flute lines (all Uncoated) ====
+  { file: '202 V Flute Straight Cut.csv', category: 'r-v-flute-straight', system: 'Imperial', fixedFlutes: 1 },
+  { file: '203 O Flute Straight.csv', category: 'r-o-flute-straight', system: 'Imperial', fixedFlutes: 1 },
+  { file: '203 1 Flute O Flute Straight Metric.csv', category: 'r-o-flute-straight', system: 'Metric', fixedFlutes: 1 },
+  { file: '204 O Flute Straight Edge Rounding.csv', category: 'r-o-flute-straight-edge-rounding', system: 'Imperial', fixedFlutes: 1 },
+  { file: '205 O Flut Spiral Edge Rounding.csv', category: 'r-o-flute-spiral-edge-rounding', system: 'Imperial', fixedFlutes: 1 },
+  { file: '1FL O Upcut Spiral.csv', category: 'r-o-flute-upcut-spiral', system: 'Imperial', fixedFlutes: 1 },
+  { file: '1FL O Upcut Spiral Metric.csv', category: 'r-o-flute-upcut-spiral', system: 'Metric', fixedFlutes: 1 },
+  { file: '1FL O Downcut Spiral.csv', category: 'r-o-flute-downcut-spiral', system: 'Imperial', fixedFlutes: 1 },
+  { file: '1FL O Downcut Spiral Metric.csv', category: 'r-o-flute-downcut-spiral', system: 'Metric', fixedFlutes: 1 },
+  { file: '1FL STD Upcut.csv', category: 'r-upcut-spiral', system: 'Imperial', fixedFlutes: 1 },
+  { file: '212 1FL Upcut Sprial Hard Plastic Metric.csv', category: 'r-upcut-spiral', system: 'Metric', fixedFlutes: 1, fixedApplication: 'Hard Plastic' },
+  { file: '1FL STD Downcut.csv', category: 'r-downcut-spiral', system: 'Imperial', fixedFlutes: 1 },
+  { file: '213 1FL Downcut Sprial Hard Plastic Metric.csv', category: 'r-downcut-spiral', system: 'Metric', fixedFlutes: 1, fixedApplication: 'Hard Plastic' },
+  { file: '216 1FL Veining Bit.csv', category: 'r-veining-bits', system: 'Imperial', fixedFlutes: 1 },
+  { file: '217 1FL Compression.csv', category: 'r-compression', system: 'Imperial', fixedFlutes: 1 },
+  { file: '217 1FL Compression Metric.csv', category: 'r-compression', system: 'Metric', fixedFlutes: 1 },
+  { file: '218 1FL Ball Compression.csv', category: 'r-ball-compression', system: 'Imperial', fixedFlutes: 1 },
+  { file: '219 1FL Mortise Compression.csv', category: 'r-mortise-compression', system: 'Imperial', fixedFlutes: 1 },
+  { file: '219 1FL Mortise Compression Metric.csv', category: 'r-mortise-compression', system: 'Metric', fixedFlutes: 1 },
+  { file: 'OFX FR UPCUT.csv', category: 'r-ofx-upcut', system: 'Imperial', fixedFlutes: 1 },
+  { file: 'OFX MT Upcut.csv', category: 'r-ofx-upcut', system: 'Metric', fixedFlutes: 1 },
+  { file: 'OFX FR Downcut.csv', category: 'r-ofx-downcut', system: 'Imperial', fixedFlutes: 1 },
+  { file: 'OFX MT Downcut.csv', category: 'r-ofx-downcut', system: 'Metric', fixedFlutes: 1 },
 ];
 
 // Exact-duplicate "(1)" exports intentionally skipped.

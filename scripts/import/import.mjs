@@ -10,7 +10,7 @@
 // Parses fractional/metric dimensions, recovers spreadsheet date-corruption,
 // and emits idempotent upsert SQL to scripts/import/out/ plus a report.
 
-import { readFileSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCsv, measure, round5, parseHeader, sql } from './parse.mjs';
@@ -26,18 +26,31 @@ const report = { files: [], recovered: [], rejected: [], total: 0, seen: new Map
 // header name → canonical dimension spec key
 const DIM_MAP = {
   'od': 'od', 'loc': 'loc', 'shk': 'shk', 'oal': 'oal',
-  'radius': 'corner_radius', 'corner radius': 'corner_radius', 'small od': 'small_od',
+  'd1': 'od', 'l1': 'loc', 'd2': 'shk', 'l2': 'oal',
+  'radius': 'corner_radius', 'corner radius': 'corner_radius',
+  'small od': 'small_od', 'small diameter': 'small_od',
   'reach': 'reach', 'neck': 'neck',
   'neck od': 'neck_od', 'neck length': 'neck_length', 'neck l': 'neck_length', 'neckl': 'neck_length', 'necklength': 'neck_length',
+  'opening': 'opening', 'tip to radius': 'tip_to_radius',
+  'upcut': 'upcut_length', 'mortise': 'mortise_length',
 };
 function classify(header) {
   const h = header.trim().toLowerCase();
   if (h in DIM_MAP) return { kind: 'dim', key: DIM_MAP[h] };
   if (h === 'degree') return { kind: 'taper' };
   if (h === 'flutes') return { kind: 'flutes' };
+  if (h === 'lh' || h === 'left hand') return { kind: 'lh' };
   return { kind: 'part' };
 }
-const isPartId = h => /part\s*id/i.test(h);
+// "Part ID", "PartID", "Par Id" (vendor typo)
+const isPartId = (h) => /par\s*t?\s*id/i.test(h);
+// coating/flute/flat words present → header encodes variant, not application
+const hasVariantSignals = (h) => /flute|power|flat|uncoated|uncloated/i.test(h);
+// application = part-column header minus the Part-ID words (e.g. "Part ID - General Wood" → "General Wood")
+function applicationFrom(header) {
+  const s = header.replace(/par\s*t?\s*id/ig, ' ').replace(/[-–—:]/g, ' ').replace(/\s+/g, ' ').trim();
+  return s || null;
+}
 
 function buildName(specs, flutes, d, coating) {
   const size = specs.od_display ?? specs.small_od_display ?? specs.shk_display ?? '';
@@ -50,11 +63,13 @@ function buildName(specs, flutes, d, coating) {
   if (specs.reach_display) n += `, ${specs.reach_display} Reach`;
   if (specs.neck_length_display) n += ', Necked';
   if (specs.flat) n += ` (${specs.flat})`;
+  if (specs.rotation) n += ' (Left Hand)';
   if (coating && coating !== 'Uncoated') n += ` — ${coating}`;
+  if (specs.application) n += ` — ${specs.application}`;
   return n;
 }
 
-function emit(bucket, d, partNumber, flutes, coating, flat, baseSpecs) {
+function emit(bucket, d, partNumber, flutes, coating, extra, baseSpecs) {
   if (!partNumber) return;
   if (report.seen.has(partNumber)) {
     report.rejected.push({ file: d.file, part: partNumber, reason: `duplicate of ${report.seen.get(partNumber)}` });
@@ -62,7 +77,8 @@ function emit(bucket, d, partNumber, flutes, coating, flat, baseSpecs) {
   }
   report.seen.set(partNumber, d.file);
   const specs = { ...baseSpecs, series: partNumber.split('-')[0] };
-  if (flat) specs.flat = flat;
+  if (extra?.flat) specs.flat = extra.flat;
+  if (extra?.application) specs.application = extra.application;
   const name = buildName(specs, flutes, d, coating);
   bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes, coating, specs });
 }
@@ -85,6 +101,8 @@ function processFile(d, headers, rows, bucket) {
         specs.taper_angle = parseFloat(val);
       } else if (c.kind === 'flutes' && val) {
         explicitFlutes = parseInt(val, 10);
+      } else if (c.kind === 'lh' && val) {
+        specs.rotation = 'Left Hand';
       }
     }
     if (!ok) { report.rejected.push({ file: d.file, part: '(row)', reason: 'unparseable dimension', row: row.join(',') }); continue; }
@@ -97,11 +115,15 @@ function processFile(d, headers, rows, bucket) {
       const cell = row[i];
       if (!cell) continue;
       const header = headers[i];
-      let coating, headerFlutes = null, flat = null;
-      if (isPartId(header)) coating = d.fixedCoating ?? 'PowerA';
-      else { const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; flat = p.flat; }
+      let coating = 'Uncoated', headerFlutes = null, flat = null, application = null;
+      if (hasVariantSignals(header)) {
+        const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; flat = p.flat;
+      } else {
+        coating = d.fixedCoating ?? 'Uncoated';
+        application = applicationFrom(header ?? '') ?? d.fixedApplication ?? null;
+      }
       const flutes = explicitFlutes ?? headerFlutes ?? d.fixedFlutes ?? null;
-      emit(bucket, d, cell, flutes, coating, flat, specs);
+      emit(bucket, d, cell, flutes, coating, { flat, application }, specs);
     }
   }
 }
@@ -135,6 +157,11 @@ mkdirSync(OUT, { recursive: true });
 
 let fileNo = 0;
 for (const d of DESCRIPTORS) {
+  // Source CSVs are deleted locally once loaded (data lives in Supabase) — skip absent files.
+  if (!existsSync(join(DATA, d.file))) {
+    report.files.push({ file: d.file, category: d.category, system: d.system, products: 0, note: 'source not present — already loaded' });
+    continue;
+  }
   const { headers, rows } = readCsv(readFileSync(join(DATA, d.file), 'utf8'));
   const bucket = [];
   processFile(d, headers, rows, bucket);
