@@ -1,5 +1,5 @@
 import { getCategories, getFeatured } from '@/lib/catalog';
-import { Hero, CategoryGrid, FeaturedProducts, DealsBanner, CapabilityStrip, VipBand } from '@/components/home';
+import { Hero, CategoryGrid, FeaturedProducts, DealsBanner, CapabilityStrip } from '@/components/home';
 
 export const revalidate = 300;
 
@@ -14,7 +14,6 @@ export default async function HomePage() {
       <FeaturedProducts products={featured} slugById={slugById} />
       <DealsBanner />
       <CapabilityStrip />
-      <VipBand />
     </main>
   );
 }

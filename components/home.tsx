@@ -10,27 +10,26 @@ export function Hero() {
     <section style={{ background: 'var(--surface)', borderRadius: 28, display: 'grid', gridTemplateColumns: '1.05fr .95fr', overflow: 'hidden' }}>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 40px' }}>
         <span style={{ ...upper, alignSelf: 'flex-start', color: 'var(--gold-700)', background: 'var(--gold-100)', padding: '7px 14px', borderRadius: 999, marginBottom: 24 }}>Precision cutting tools · factory direct</span>
-        <h1 style={{ fontSize: 58, lineHeight: 1.0, letterSpacing: '-.02em', margin: '0 0 20px' }}>The right tool.<br /><span style={{ color: 'var(--green)' }}>In stock.</span> On time.</h1>
+        <h1 style={{ fontSize: 60, lineHeight: 1.0, letterSpacing: '-.02em', margin: '0 0 20px', color: 'var(--text)' }}>The right tool.<br /><span style={{ color: 'var(--green)' }}>In stock.</span> On time.</h1>
         <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--muted)', maxWidth: 460, margin: '0 0 30px' }}>
-          Solid carbide end mills ground and coated to spec — square, ball, corner-radius, taper, and high-performance geometries. Factory-direct and made in the USA.
+          Over 27,500 cutting tools and industrial supplies stocked in Largo, Florida — plus factory-direct access to 120+ trusted brands.
         </p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 34 }}>
-          <Link href="/category/square-end-mills" className="btn-green" style={{ height: 52, padding: '0 26px', fontSize: 15, fontWeight: 600, color: '#fff', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 8 }}>Shop the catalog<ArrowRight size={17} strokeWidth={2.2} /></Link>
-          <Link href="/category/corner-radius-end-mills" className="btn-outline" style={{ height: 52, padding: '0 24px', fontSize: 15, fontWeight: 600, color: 'var(--text)', border: '1px solid rgba(43,42,38,.1)', borderRadius: 14, display: 'inline-flex', alignItems: 'center' }}>Corner Radius</Link>
+          <Link href="/category/square-end-mills" className="btn-green" style={{ height: 52, padding: '0 26px', fontSize: 15, fontWeight: 600, color: '#fff', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 8 }}>Shop Florida Stock<ArrowRight size={17} strokeWidth={2.2} /></Link>
+          <Link href="/category/square-end-mills" className="btn-outline" style={{ height: 52, padding: '0 24px', fontSize: 15, fontWeight: 600, color: 'var(--text)', border: '1px solid rgba(43,42,38,.1)', borderRadius: 14, display: 'inline-flex', alignItems: 'center' }}>Browse Brands</Link>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', background: 'var(--surface-2)', borderRadius: 18, padding: '20px 4px' }}>
-          {[['3,278', 'Endmills cataloged'], ['19', 'Product families'], ['Same-day', 'Largo pickup']].map(([a, b], i) => (
+          {[['27,500+', 'In local FL stock'], ['120+', 'Trusted brands'], ['Same-day', 'Largo pickup']].map(([a, b], i) => (
             <div key={i} style={{ padding: '0 20px', borderLeft: i ? '1px solid rgba(43,42,38,.09)' : undefined }}>
-              <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--green)', lineHeight: 1 }}>{a}</div>
+              <div style={{ fontSize: 28, fontWeight: 600, color: 'var(--green)', lineHeight: 1 }}>{a}</div>
               <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginTop: 5 }}>{b}</div>
             </div>
           ))}
         </div>
       </div>
-      <div style={{ position: 'relative', background: 'var(--surface)', display: 'grid', placeItems: 'center', minHeight: 520, padding: 48 }}>
+      <div style={{ position: 'relative', background: '#fff', overflow: 'hidden', minHeight: 560 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/slots/Standard-Square-Endmill.jpg" alt="Solid carbide end mill" style={{ width: '100%', maxWidth: 500, objectFit: 'contain' }} />
-        <span style={{ position: 'absolute', top: 24, right: 24, ...upper, color: '#fff', background: 'var(--gold)', padding: '7px 14px', borderRadius: 999 }}>Made in USA</span>
+        <img src="/brand/vipProgram.png" alt="New VIP Program — Bronze 1%, Silver 2%, Gold 4%, Platinum 5%" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
     </section>
   );
@@ -70,7 +69,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
 export function FeaturedProducts({ products, slugById }: { products: Product[]; slugById: Record<string, string> }) {
   return (
     <section style={{ background: 'var(--surface)', borderRadius: 28, padding: 40, marginTop: 40 }}>
-      <Head eyebrow="Factory direct" title="Popular PowerA end mills" href="/category/square-end-mills" cta="Shop the catalog" />
+      <Head eyebrow="In stock now" title="Customer favorites" href="/category/square-end-mills" cta="Shop all in-stock" />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, gridAutoRows: '1fr' }}>
         {products.map((p) => <ProductCard key={p.id} product={p} categorySlug={slugById[p.category_id] ?? 'square-end-mills'} />)}
       </div>
@@ -80,11 +79,17 @@ export function FeaturedProducts({ products, slugById }: { products: Product[]; 
 
 export function DealsBanner() {
   return (
-    <section style={{ marginTop: 40 }}>
-      <Link href="/category/square-end-mills" style={{ display: 'block', borderRadius: 28, overflow: 'hidden' }}>
+    <section style={{ background: 'var(--green-800)', borderRadius: 28, padding: 8, display: 'grid', gridTemplateColumns: '0.82fr 1.18fr', gap: 8, alignItems: 'center', overflow: 'hidden', marginTop: 40 }}>
+      <div style={{ padding: '48px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <span style={{ ...upper, alignSelf: 'flex-start', color: '#fff', background: 'var(--gold-2)', padding: '6px 13px', borderRadius: 999, marginBottom: 20 }}>Florida Stock</span>
+        <h2 style={{ fontSize: 50, lineHeight: .98, margin: 0, color: '#fff' }}>Liquidation<br /><span style={{ color: 'var(--gold-2)' }}>Deals</span></h2>
+        <p style={{ fontSize: 16, color: 'rgba(255,255,255,.8)', margin: '16px 0 28px', maxWidth: 420 }}>Brand-new tooling, below original selling prices. Limited quantities — once it's gone, it's gone.</p>
+        <Link href="/category/square-end-mills" className="btn-gold" style={{ alignSelf: 'flex-start', height: 52, padding: '0 26px', fontSize: 15, fontWeight: 600, color: '#fff', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 9 }}>Shop liquidation inventory<ArrowRight size={16} strokeWidth={2.4} /></Link>
+      </div>
+      <div style={{ position: 'relative', aspectRatio: '16/9', background: '#0f3320', borderRadius: 22, overflow: 'hidden' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/floridaDeal.png" alt="Florida Stock — Liquidation Deals. Brand-new tooling below original selling prices." style={{ width: '100%', height: 'auto', display: 'block' }} />
-      </Link>
+        <img src="/brand/floridaDeal.png" alt="Florida Stock — Liquidation Deals. Brand-new tooling below original selling prices." style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+      </div>
     </section>
   );
 }
@@ -97,15 +102,6 @@ export function CapabilityStrip() {
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
         {chips.map((b) => <span key={b} className="brand-chip" style={{ fontWeight: 600, fontSize: 16, color: 'var(--muted)', background: 'var(--surface)', padding: '12px 22px', borderRadius: 999 }}>{b}</span>)}
       </div>
-    </section>
-  );
-}
-
-export function VipBand() {
-  return (
-    <section style={{ margin: '40px 0 48px', display: 'grid', placeItems: 'center' }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/vipProgram.png" alt="New VIP Program — Bronze 1%, Silver 2%, Gold 4%, Platinum 5%. VIP pricing and shipping perks based on rolling 12-month purchases." style={{ width: '100%', maxWidth: 900, height: 'auto', display: 'block', borderRadius: 28 }} />
     </section>
   );
 }

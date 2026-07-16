@@ -7,9 +7,9 @@ export async function Header() {
   const nav = cats.slice(0, 7);
 
   return (
-    <header style={{ background: '#fff', borderBottom: '1px solid var(--line)' }}>
+    <header style={{ background: '#fff' }}>
       {/* utility bar */}
-      <div style={{ borderBottom: '1px solid var(--line)' }}>
+      <div>
         <div className="wrap" style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
             <Pin size={14} color="var(--gold)" />
@@ -56,7 +56,7 @@ export async function Header() {
       </div>
 
       {/* category nav */}
-      <nav style={{ background: '#fff', borderTop: '1px solid var(--line)', position: 'sticky', top: 0, zIndex: 20 }}>
+      <nav style={{ background: '#fff', position: 'sticky', top: 0, zIndex: 20 }}>
         <div className="wrap" style={{ padding: '6px 32px 8px', display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto' }}>
           {nav.map((c) => (
             <Link key={c.slug} className="navlink" href={`/category/${c.slug}`}>{c.name.replace(' End Mills', '')}</Link>
