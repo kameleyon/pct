@@ -15,7 +15,7 @@ export function Footer() {
           <div>
             <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: '#fff', marginBottom: 16 }}>Shop</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-              {['Florida Local Stock', 'Cutting Tools', 'End Mills', 'Indexable Tooling', 'Liquidation Deals'].map((l) => <Link key={l} href="/category/square-end-mills">{l}</Link>)}
+              {['End Mills', 'Drills', 'Reamers & Threadmills', 'Routers & Burs', 'Dental Tools', 'Liquidation Deals'].map((l) => <Link key={l} href="/category/square-end-mills">{l}</Link>)}
             </div>
           </div>
           <div>

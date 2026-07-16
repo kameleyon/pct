@@ -2,10 +2,12 @@ import Link from 'next/link';
 
 const nav = [
   ['End Mills', '/category/square-end-mills'],
+  ['High Performance End Mills', '#'],
+  ['Pro+ Performance End Mills', '#'],
+  ['High Performance Routers', '#'],
   ['Drills', '#'],
-  ['Reamers', '#'],
-  ['Routers', '#'],
-  ['Burs', '#'],
+  ['Reamers & Threadmills', '#'],
+  ['Burs & Fiberglass Routing', '#'],
   ['Dental Tools', '#'],
 ];
 
@@ -41,7 +43,7 @@ export function Header() {
 
           <form action="/category/square-end-mills" className="mainbar-search" style={{ display: 'flex', alignItems: 'stretch', background: '#fff', border: '1px solid var(--line)', borderRadius: 16, height: 50, overflow: 'hidden' }}>
             <select name="cat" style={{ width: 150, border: 0, background: 'transparent', height: '100%', fontWeight: 600, fontSize: 13, paddingLeft: 16, color: '#4a473f' }}>
-              <option>All Categories</option><option>End Mills</option><option>Drills</option><option>Reamers</option><option>Routers</option><option>Burs</option><option>Dental Tools</option>
+              <option>All Categories</option><option>End Mills</option><option>High Performance End Mills</option><option>Pro+ Performance End Mills</option><option>High Performance Routers</option><option>Drills</option><option>Reamers &amp; Threadmills</option><option>Burs &amp; Fiberglass Routing</option><option>Dental Tools</option>
             </select>
             <div style={{ width: 1, background: 'rgba(43,42,38,.1)', margin: '11px 0' }} />
             <input name="q" placeholder="Search part #, brand, or tool type…" style={{ border: 0, background: 'transparent', height: '100%', flex: 1, fontSize: 14, minWidth: 60 }} />
