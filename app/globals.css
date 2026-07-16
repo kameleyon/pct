@@ -1,0 +1,49 @@
+:root{
+  --bg:#ffffff; --surface:#FBF8F1; --surface-2:#FCFAF4; --text:#2B2A26;
+  --muted:#6E6A62; --muted-2:#9a968d;
+  --green:#1a5c34; --green-600:#154a2a; --green-700:#103b21; --green-800:#0c2c19;
+  --green-100:#E4EDE5;
+  --gold:#bf9b30; --gold-2:#d4af37; --gold-700:#a67f26; --gold-100:#F1E7CB;
+  --line:rgba(43,42,38,.08);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:var(--font-archivo), Archivo, system-ui, sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-weight:600; letter-spacing:-.01em}
+b,strong{font-weight:600}
+a{color:var(--green); text-decoration:none}
+::selection{background:rgba(26,92,52,.18)}
+input,select,button{font-family:inherit}
+input,select{outline:none}
+@keyframes pctpulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* interactive helpers (inline styles can't do :hover) */
+.navlink{color:#4a473f;font-weight:600;font-size:13.5px;letter-spacing:.01em;padding:8px 14px;border-radius:999px;white-space:nowrap;transition:background .16s,color .16s;cursor:pointer}
+.navlink:hover{background:var(--green-100);color:var(--green)}
+.iconbtn{transition:background .16s,color .16s}
+.iconbtn:hover{background:var(--green-100);color:var(--green)}
+.btn-green{background:var(--green);transition:background .16s}
+.btn-green:hover{background:var(--green-600)}
+.btn-gold{background:var(--gold-2);transition:background .16s}
+.btn-gold:hover{background:#c2982f}
+.btn-gold-solid{background:var(--gold);transition:background .16s}
+.btn-gold-solid:hover{background:var(--gold-700)}
+.btn-outline{background:#fff;transition:background .16s}
+.btn-outline:hover{background:var(--surface)}
+.cat-card{transition:background .16s}
+.cat-card:hover{background:var(--green-100)}
+.prod-card{transition:border-color .18s}
+.prod-card:hover{border-color:rgba(43,42,38,.22)}
+.brand-chip{transition:background .16s,color .16s}
+.brand-chip:hover{background:var(--green-100);color:var(--green)}
+.foot-link{color:rgba(255,255,255,.72);font-size:13px;transition:color .16s}
+.foot-link:hover{color:var(--gold-2)}
+.hover-underline:hover{text-decoration:underline}
+
+.wrap{max-width:1360px;margin:0 auto;padding-left:32px;padding-right:32px}
+@media (max-width:720px){ .wrap{padding-left:18px;padding-right:18px} }
