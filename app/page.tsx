@@ -1,11 +1,10 @@
-import { getCategories, getFeatured } from '@/lib/catalog';
+import { getTopCategories, getFeatured, getCategorySlugMap } from '@/lib/catalog';
 import { Hero, CategoryGrid, FeaturedProducts, DealsBanner, BrandsStrip, VipBand } from '@/components/home';
 
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [categories, featured] = await Promise.all([getCategories(), getFeatured(4)]);
-  const slugById = Object.fromEntries(categories.map((c) => [c.id, c.slug]));
+  const [categories, featured, slugById] = await Promise.all([getTopCategories(), getFeatured(4), getCategorySlugMap()]);
 
   return (
     <main className="wrap" style={{ paddingTop: 8 }}>

@@ -60,11 +60,23 @@ export const MM_PER_IN = 25.4;
 // Handles: "2-Flute", "2Flute", "2 Flute - Uncoated", "2-Flute PowerA",
 //          "2Flute - PowerA", "2 Flute- Power A", "4-Flute power A", "6 Flute - Power A".
 export function parseHeader(header, fixedFlutes = null) {
-  const coating = /power\s*-?\s*a/i.test(header) ? 'PowerA (AlTiN)' : 'Uncoated';
+  const h = String(header);
+  // coating — check PowerNR before PowerN; default Uncoated
+  let coating = 'Uncoated';
+  if (/power\s*-?\s*nr/i.test(h)) coating = 'PowerNR';
+  else if (/power\s*-?\s*z/i.test(h)) coating = 'PowerZ';
+  else if (/power\s*-?\s*c/i.test(h)) coating = 'PowerC';
+  else if (/power\s*-?\s*n/i.test(h)) coating = 'PowerN';
+  else if (/power\s*-?\s*a/i.test(h)) coating = 'PowerA';
+  // shank flat facet (…W- part numbers)
+  let flat = null;
+  if (/with\s*flat/i.test(h)) flat = 'With Flat';
+  else if (/no\s*-?\s*flat|noflat/i.test(h)) flat = 'No Flat';
+  // flute count from header (e.g. "PowerA 4 Flute", "2 Flute - PowerZ")
   let flutes = fixedFlutes;
-  const m = header.match(/(\d+)\s*-?\s*flute/i) || header.match(/^\s*(\d+)/);
+  const m = h.match(/(\d+)\s*-?\s*flutes?/i);
   if (m) flutes = parseInt(m[1], 10);
-  return { flutes, coating };
+  return { flutes, coating, flat };
 }
 
 // --- unified length measurement → { in, display, mm? } ---

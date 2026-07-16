@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 const nav = [
-  ['End Mills', '/category/square-end-mills'],
-  ['High Performance End Mills', '#'],
+  ['End Mills', '/category/end-mills'],
+  ['High Performance End Mills', '/category/high-performance-end-mills'],
   ['Pro+ Performance End Mills', '#'],
   ['High Performance Routers', '#'],
   ['Drills', '#'],

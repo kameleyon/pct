@@ -24,7 +24,12 @@ const CHUNK = 300;
 const report = { files: [], recovered: [], rejected: [], total: 0, seen: new Map() };
 
 // header name → canonical dimension spec key
-const DIM_MAP = { 'od': 'od', 'loc': 'loc', 'shk': 'shk', 'oal': 'oal', 'radius': 'corner_radius', 'small od': 'small_od', 'reach': 'reach', 'neck': 'neck' };
+const DIM_MAP = {
+  'od': 'od', 'loc': 'loc', 'shk': 'shk', 'oal': 'oal',
+  'radius': 'corner_radius', 'corner radius': 'corner_radius', 'small od': 'small_od',
+  'reach': 'reach', 'neck': 'neck',
+  'neck od': 'neck_od', 'neck length': 'neck_length', 'neck l': 'neck_length', 'neckl': 'neck_length', 'necklength': 'neck_length',
+};
 function classify(header) {
   const h = header.trim().toLowerCase();
   if (h in DIM_MAP) return { kind: 'dim', key: DIM_MAP[h] };
@@ -34,19 +39,22 @@ function classify(header) {
 }
 const isPartId = h => /part\s*id/i.test(h);
 
-function buildName(specs, flutes, geometry, coating) {
+function buildName(specs, flutes, d, coating) {
   const size = specs.od_display ?? specs.small_od_display ?? specs.shk_display ?? '';
-  let n = `${size} ${flutes ? `${flutes}-Flute ` : ''}${geometry}`.trim();
+  const geom = [specs.geometry, GEOMETRY[d.category]].filter(Boolean).join(' ');
+  let n = `${size} ${flutes ? `${flutes}-Flute ` : ''}${geom}`.trim();
   if (specs.corner_radius_display) n += ` × ${specs.corner_radius_display} Rad`;
   if (specs.taper_angle) n += `, ${specs.taper_angle}° Taper`;
   if (specs.helix_angle) n += `, ${specs.helix_angle}° Helix`;
   if (specs.point_angle) n += `, ${specs.point_angle}° Point`;
   if (specs.reach_display) n += `, ${specs.reach_display} Reach`;
-  if (coating === 'PowerA (AlTiN)') n += ' — PowerA';
+  if (specs.neck_length_display) n += ', Necked';
+  if (specs.flat) n += ` (${specs.flat})`;
+  if (coating && coating !== 'Uncoated') n += ` — ${coating}`;
   return n;
 }
 
-function emit(bucket, d, partNumber, flutes, coating, baseSpecs) {
+function emit(bucket, d, partNumber, flutes, coating, flat, baseSpecs) {
   if (!partNumber) return;
   if (report.seen.has(partNumber)) {
     report.rejected.push({ file: d.file, part: partNumber, reason: `duplicate of ${report.seen.get(partNumber)}` });
@@ -54,19 +62,21 @@ function emit(bucket, d, partNumber, flutes, coating, baseSpecs) {
   }
   report.seen.set(partNumber, d.file);
   const specs = { ...baseSpecs, series: partNumber.split('-')[0] };
-  const name = buildName(specs, flutes, GEOMETRY[d.category], coating);
+  if (flat) specs.flat = flat;
+  const name = buildName(specs, flutes, d, coating);
   bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes, coating, specs });
 }
 
 function processFile(d, headers, rows, bucket) {
   const cls = headers.map(classify);
   for (const row of rows) {
-    if (!row[0]) continue;
+    if (row.every((c) => !String(c ?? '').trim())) continue;   // skip fully-blank rows
     const specs = {};
     let ok = true, explicitFlutes = null;
     for (let i = 0; i < cls.length; i++) {
       const c = cls[i], val = row[i];
       if (c.kind === 'dim') {
+        if (!val) continue;                                     // empty dim cell — skip, don't reject
         const m = measure(val, d.system, (from, to) => report.recovered.push({ file: d.file, from, to }));
         if (!m) { ok = false; break; }
         specs[`${c.key}_in`] = m.in; specs[`${c.key}_display`] = m.display;
@@ -78,6 +88,7 @@ function processFile(d, headers, rows, bucket) {
       }
     }
     if (!ok) { report.rejected.push({ file: d.file, part: '(row)', reason: 'unparseable dimension', row: row.join(',') }); continue; }
+    if (d.geometry) specs.geometry = d.geometry;
     if (d.fixedHelix) specs.helix_angle = d.fixedHelix;
     if (d.fixedPointAngle) specs.point_angle = d.fixedPointAngle;
 
@@ -86,11 +97,11 @@ function processFile(d, headers, rows, bucket) {
       const cell = row[i];
       if (!cell) continue;
       const header = headers[i];
-      let coating, headerFlutes = null;
-      if (isPartId(header)) coating = d.fixedCoating ?? 'PowerA (AlTiN)';
-      else { const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; }
+      let coating, headerFlutes = null, flat = null;
+      if (isPartId(header)) coating = d.fixedCoating ?? 'PowerA';
+      else { const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; flat = p.flat; }
       const flutes = explicitFlutes ?? headerFlutes ?? d.fixedFlutes ?? null;
-      emit(bucket, d, cell, flutes, coating, specs);
+      emit(bucket, d, cell, flutes, coating, flat, specs);
     }
   }
 }
@@ -104,7 +115,7 @@ function toSql(categorySlug, products) {
     stmts.push(
 `insert into public.products
   (part_number, slug, category_id, manufacturer_id, name, measurement_system, flutes, coating, material, specs)
-select v.part_number, v.slug, c.id, m.id, v.name, v.measurement_system, v.flutes, v.coating, 'Carbide', v.specs::jsonb
+select v.part_number, v.slug, c.id, m.id, v.name, v.measurement_system, v.flutes::int, v.coating, 'Carbide', v.specs::jsonb
 from (values
 ${rows}
 ) as v(part_number, slug, name, measurement_system, flutes, coating, specs),

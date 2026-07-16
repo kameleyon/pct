@@ -56,6 +56,65 @@ export async function getCategories(): Promise<Category[]> {
   }
 }
 
+/** Top-level categories (parent_id null), counted across their child lines. */
+export async function getTopCategories(): Promise<Category[]> {
+  const sb = getSupabase();
+  try {
+    const { data: cats } = await sb
+      .from('categories')
+      .select('id,slug,name,description,parent_id,sort_order')
+      .is('parent_id', null)
+      .order('sort_order');
+    if (!cats) return [];
+    return await Promise.all(
+      cats.map(async (c) => {
+        const { data: kids } = await sb.from('categories').select('id').eq('parent_id', c.id);
+        const ids = (kids ?? []).map((k: any) => k.id);
+        let count = 0;
+        if (ids.length) {
+          const r = await sb.from('products').select('*', { count: 'exact', head: true }).in('category_id', ids);
+          count = r.count ?? 0;
+        }
+        return { ...c, count } as Category;
+      })
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** Direct child categories of a parent, each with a product count. */
+export async function getChildCategories(parentId: string): Promise<Category[]> {
+  const sb = getSupabase();
+  try {
+    const { data: cats } = await sb
+      .from('categories')
+      .select('id,slug,name,description,parent_id,sort_order')
+      .eq('parent_id', parentId)
+      .order('sort_order');
+    if (!cats) return [];
+    return await Promise.all(
+      cats.map(async (c) => {
+        const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).eq('category_id', c.id);
+        return { ...c, count: count ?? 0 } as Category;
+      })
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** id → slug map for every category (used to route product cards). */
+export async function getCategorySlugMap(): Promise<Record<string, string>> {
+  const sb = getSupabase();
+  try {
+    const { data } = await sb.from('categories').select('id,slug');
+    return Object.fromEntries((data ?? []).map((c: any) => [c.id, c.slug]));
+  } catch {
+    return {};
+  }
+}
+
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const sb = getSupabase();
   try {
