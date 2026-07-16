@@ -11,13 +11,13 @@ export function Hero() {
       <div className="hero-left" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--color-gold-700)', background: 'var(--color-gold-100)', padding: '7px 14px', borderRadius: 999, marginBottom: 24 }}>Precision cutting tools · factory direct</div>
         <h1 style={{ lineHeight: 1.0, letterSpacing: '-.02em', margin: '0 0 20px', color: 'var(--color-text)' }}>The right tool.<br /><span style={{ color: 'var(--color-accent)' }}>In stock.</span> On time.</h1>
-        <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--muted)', maxWidth: 460, margin: '0 0 30px' }}>Over 27,500 cutting tools and industrial supplies stocked in Largo, Florida — plus factory-direct access to 120+ trusted brands.</p>
+        <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--muted)', maxWidth: 460, margin: '0 0 30px' }}>Over 27,500 cutting tools and industrial supplies stocked in Zephyrhills, Florida — plus factory-direct access to 120+ trusted brands.</p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 34, flexWrap: 'wrap' }}>
           <Link href="/category/square-end-mills" className="h-green" style={{ height: 52, padding: '0 26px', fontSize: 15, fontWeight: 600, color: '#fff', background: 'var(--color-accent)', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center' }}>Shop Florida Stock<ArrowR /></Link>
           <Link href="/category/square-end-mills" style={{ height: 52, padding: '0 24px', fontSize: 15, fontWeight: 600, color: 'var(--color-text)', background: '#fff', border: '1px solid rgba(43,42,38,.1)', borderRadius: 14, display: 'inline-flex', alignItems: 'center' }}>Browse Brands</Link>
         </div>
         <div className="hero-stats" style={{ background: 'var(--color-surface-2)', borderRadius: 18, padding: '20px 4px' }}>
-          {[['27,500+', 'In local FL stock'], ['120+', 'Trusted brands'], ['Same-day', 'Largo pickup']].map(([a, b], i) => (
+          {[['27,500+', 'In local FL stock'], ['120+', 'Trusted brands'], ['Same-day', 'Zephyrhills pickup']].map(([a, b], i) => (
             <div key={i} style={{ borderLeft: i ? '1px solid rgba(43,42,38,.09)' : undefined }}>
               <div className="hstat-num" style={{ fontWeight: 600, color: 'var(--color-accent)' }}>{a}</div>
               <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginTop: 5 }}>{b}</div>

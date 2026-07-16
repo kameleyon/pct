@@ -8,8 +8,8 @@ export function Footer() {
           <div>
             <div style={{ fontWeight: 600, fontSize: 20, color: '#fff', letterSpacing: '.01em' }}>Precise Cut Tools</div>
             <div style={{ fontSize: 10.5, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--color-gold-2)', marginTop: 6, fontWeight: 600 }}>Precision Cutting Tools</div>
-            <p style={{ fontSize: 13.5, lineHeight: 1.6, margin: '20px 0 0', color: 'rgba(255,255,255,.62)' }}>10360 72nd Street North, Unit #809<br />Largo, Florida 33777</p>
-            <a href="tel:+17275464655" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 14, color: '#fff', fontWeight: 600, fontSize: 17 }}>(727) 546-4655</a>
+            <p style={{ fontSize: 13.5, lineHeight: 1.6, margin: '20px 0 0', color: 'rgba(255,255,255,.62)' }}>Zephyrhills, Florida</p>
+            <a href="tel:+18137708795" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 14, color: '#fff', fontWeight: 600, fontSize: 17 }}>(813) 770-8795</a>
             <div style={{ marginTop: 18 }}><span style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600, color: 'var(--color-gold-2)' }}>Get directions<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg></span></div>
           </div>
           <div>
