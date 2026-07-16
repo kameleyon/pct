@@ -150,7 +150,7 @@ export async function getFeatured(limit = 8): Promise<Product[]> {
     const { data } = await sb
       .from('products')
       .select(PRODUCT_COLS)
-      .eq('coating', 'PowerA (AlTiN)')
+      .eq('coating', 'PowerA')
       .order('part_number')
       .limit(limit);
     return (data as Product[]) ?? [];
@@ -253,41 +253,41 @@ export const BRAND = 'Mastercut';
 
 // Real product photography (dropped into public/slots/), mapped by geometry.
 const CATEGORY_IMAGE: Record<string, string> = {
-  'square-end-mills': '/slots/Standard-Square-Endmill.jpg',
-  'ball-end-mills': '/slots/Standard-Ball-Endmill.jpg',
-  'corner-radius-end-mills': '/slots/Standard-Corner-Radius.jpg',
-  'double-end-square-end-mills': '/slots/DoubleEnd-Square2flute.jpg',
-  '6-flute-square-end-mills': '/slots/6-flute-square.jpg',
-  '50-helix-corner-radius-end-mills': '/slots/Standard-Corner-Radius.jpg',
-  'square-straight-flute-end-mills': '/slots/Standard-Square-Endmill.jpg',
-  'ball-straight-flute-end-mills': '/slots/Standard-Ball-Endmill.jpg',
-  'double-end-ball-end-mills': '/slots/Standard-Ball-Endmill.jpg',
-  'double-end-square-with-flat': '/slots/DoubleEnd-Square2flute.jpg',
-  'double-end-ball-with-flat': '/slots/Standard-Ball-Endmill.jpg',
-  'square-mini-mills': '/slots/Standard-Square-Endmill.jpg',
-  'ball-mini-mills': '/slots/Standard-Ball-Endmill.jpg',
-  'drill-mills': '/slots/Standard-Square-Endmill.jpg',
-  'square-taper-mills': '/slots/Standard-Square-Endmill.jpg',
-  'ball-taper-mills': '/slots/Standard-Ball-Endmill.jpg',
-  'short-flute-square-end-mills': '/slots/Standard-Square-Endmill.jpg',
-  'short-flute-ball-end-mills': '/slots/Standard-Ball-Endmill.jpg',
-  'short-flute-corner-radius-end-mills': '/slots/Standard-Corner-Radius.jpg',
+  'square-end-mills': '/slots/Standard-Square-Endmill.png',
+  'ball-end-mills': '/slots/Standard-Ball-Endmill.png',
+  'corner-radius-end-mills': '/slots/Standard-Corner-Radius.png',
+  'double-end-square-end-mills': '/slots/DoubleEnd-Square2flute.png',
+  '6-flute-square-end-mills': '/slots/6-flute-square.png',
+  '50-helix-corner-radius-end-mills': '/slots/Standard-Corner-Radius.png',
+  'square-straight-flute-end-mills': '/slots/Standard-Square-Endmill.png',
+  'ball-straight-flute-end-mills': '/slots/Standard-Ball-Endmill.png',
+  'double-end-ball-end-mills': '/slots/Standard-Ball-Endmill.png',
+  'double-end-square-with-flat': '/slots/DoubleEnd-Square2flute.png',
+  'double-end-ball-with-flat': '/slots/Standard-Ball-Endmill.png',
+  'square-mini-mills': '/slots/Standard-Square-Endmill.png',
+  'ball-mini-mills': '/slots/Standard-Ball-Endmill.png',
+  'drill-mills': '/slots/Standard-Square-Endmill.png',
+  'square-taper-mills': '/slots/Standard-Square-Endmill.png',
+  'ball-taper-mills': '/slots/Standard-Ball-Endmill.png',
+  'short-flute-square-end-mills': '/slots/Standard-Square-Endmill.png',
+  'short-flute-ball-end-mills': '/slots/Standard-Ball-Endmill.png',
+  'short-flute-corner-radius-end-mills': '/slots/Standard-Corner-Radius.png',
   // High Performance Routers (1-flute lines)
-  'r-upcut-spiral': '/slots/R-Single-Flute-Upcut-Spiral-Wood-1-768x102.jpg',
-  'r-downcut-spiral': '/slots/R-Single-Downcut-Spiral-Endmill-End-Wood-768x138.jpg',
-  'r-o-flute-upcut-spiral': '/slots/R-O-Flute-Upcut-Spiral-768x84.jpg',
-  'r-o-flute-downcut-spiral': '/slots/R-O-Flute-Downcut-Spiral-768x106.jpg',
-  'r-o-flute-straight': '/slots/R-O-Flute-Straight-Cut-Crescent-End-1-768x128.jpg',
-  'r-v-flute-straight': '/slots/R-V-Flute-Straight-Cut-Crescent-End-768x103.jpg',
-  'r-o-flute-straight-edge-rounding': '/slots/R-O-Flute-Straight-Cut-Edge-Rounding-1-768x122.jpg',
-  'r-o-flute-spiral-edge-rounding': '/slots/R-O-Flute-Spiral-Cut-Edge-Rounding-1-768x87.jpg',
-  'r-compression': '/slots/R-1-Flute-Compression-Spiral-Endmill-End-1-768x110.jpg',
-  'r-ball-compression': '/slots/Ball-Compression-Spiral-Endmill-End-21-768x89.jpg',
-  'r-mortise-compression': '/slots/R-Single-Flute-Mortise-Compression-1-768x107.jpg',
-  'r-ofx-upcut': '/slots/R-1-Flute-Upcut-OFX-1-768x161.jpg',
-  'r-ofx-downcut': '/slots/R-1-Flute-Downcut-OFX-1-768x133.jpg',
-  'r-veining-bits': '/slots/R-Veining-Bit-768x139.jpg',
+  'r-upcut-spiral': '/slots/R-Single-Flute-Upcut-Spiral-Wood-1-768x102.png',
+  'r-downcut-spiral': '/slots/R-Single-Downcut-Spiral-Endmill-End-Wood-768x138.png',
+  'r-o-flute-upcut-spiral': '/slots/R-O-Flute-Upcut-Spiral-768x84.png',
+  'r-o-flute-downcut-spiral': '/slots/R-O-Flute-Downcut-Spiral-768x106.png',
+  'r-o-flute-straight': '/slots/R-O-Flute-Straight-Cut-Crescent-End-1-768x128.png',
+  'r-v-flute-straight': '/slots/R-V-Flute-Straight-Cut-Crescent-End-768x103.png',
+  'r-o-flute-straight-edge-rounding': '/slots/R-O-Flute-Straight-Cut-Edge-Rounding-1-768x122.png',
+  'r-o-flute-spiral-edge-rounding': '/slots/R-O-Flute-Spiral-Cut-Edge-Rounding-1-768x87.png',
+  'r-compression': '/slots/R-1-Flute-Compression-Spiral-Endmill-End-1-768x110.png',
+  'r-ball-compression': '/slots/Ball-Compression-Spiral-Endmill-End-21-768x89.png',
+  'r-mortise-compression': '/slots/R-Single-Flute-Mortise-Compression-1-768x107.png',
+  'r-ofx-upcut': '/slots/R-1-Flute-Upcut-OFX-1-768x161.png',
+  'r-ofx-downcut': '/slots/R-1-Flute-Downcut-OFX-1-768x133.png',
+  'r-veining-bits': '/slots/R-Veining-Bit-768x139.png',
 };
 
 export const categoryImage = (slug: string): string =>
-  CATEGORY_IMAGE[slug] ?? '/slots/Standard-Square-Endmill.jpg';
+  CATEGORY_IMAGE[slug] ?? '/slots/Standard-Square-Endmill.png';
