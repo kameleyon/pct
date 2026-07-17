@@ -1,9 +1,9 @@
 import Link from 'next/link';
+import { MobileNav } from './MobileNav';
 
-const nav = [
+const NAV: [string, string][] = [
   ['End Mills', '/category/end-mills'],
   ['High Performance End Mills', '/category/high-performance-end-mills'],
-  ['Pro+ Performance End Mills', '#'],
   ['High Performance Routers', '/category/high-performance-routers'],
   ['Drills', '#'],
   ['Reamers & Threadmills', '#'],
@@ -43,7 +43,7 @@ export function Header() {
 
           <form action="/category/square-end-mills" className="mainbar-search" style={{ display: 'flex', alignItems: 'stretch', background: '#fff', border: '1px solid var(--line)', borderRadius: 16, height: 50, overflow: 'hidden' }}>
             <select name="cat" style={{ width: 150, border: 0, background: 'transparent', height: '100%', fontWeight: 600, fontSize: 13, paddingLeft: 16, color: '#4a473f' }}>
-              <option>All Categories</option><option>End Mills</option><option>High Performance End Mills</option><option>Pro+ Performance End Mills</option><option>High Performance Routers</option><option>Drills</option><option>Reamers &amp; Threadmills</option><option>Burs &amp; Fiberglass Routing</option><option>Dental Tools</option>
+              <option>All Categories</option><option>End Mills</option><option>High Performance End Mills</option><option>High Performance Routers</option><option>Drills</option><option>Reamers &amp; Threadmills</option><option>Burs &amp; Fiberglass Routing</option><option>Dental Tools</option>
             </select>
             <div style={{ width: 1, background: 'rgba(43,42,38,.1)', margin: '11px 0' }} />
             <input name="q" placeholder="Search part #, brand, or tool type…" style={{ border: 0, background: 'transparent', height: '100%', flex: 1, fontSize: 14, minWidth: 60 }} />
@@ -53,6 +53,7 @@ export function Header() {
           </form>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto', flex: 'none' }}>
+            <MobileNav items={NAV} />
             <button className="h-icon" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: 'none', border: 0, borderRadius: 14, cursor: 'pointer', color: '#4a473f', padding: '8px 12px' }}>
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
               <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.01em' }}>Quick Order</span>
@@ -69,10 +70,10 @@ export function Header() {
         </div>
       </div>
 
-      {/* ===== CATEGORY NAV ===== */}
-      <div style={{ background: '#fff', position: 'sticky', top: 0, zIndex: 20 }}>
+      {/* ===== CATEGORY NAV (desktop only) ===== */}
+      <div className="desktop-nav" style={{ background: '#fff', position: 'sticky', top: 0, zIndex: 20 }}>
         <div className="wrap noscroll" style={{ padding: '6px 24px 12px', display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto' }}>
-          {nav.map(([label, href]) => (
+          {NAV.map(([label, href]) => (
             <Link key={label} className="pct-navlink" href={href}>{label}</Link>
           ))}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>

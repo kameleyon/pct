@@ -70,6 +70,8 @@ html,body{overflow-x:hidden;max-width:100%}
 .browse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;grid-auto-rows:1fr}
 .filter-rail{position:sticky;top:70px}
 .noscroll::-webkit-scrollbar{display:none}
+.mobile-nav{display:none}
+@media (max-width:860px){ .mobile-nav{display:block} .desktop-nav{display:none} }
 /* prevent grid/flex blowout: let children shrink below content width */
 .cat-grid>*,.feat-grid>*,.vip-grid>*,.browse-grid>*,.foot-grid>*,.browse-layout>*{min-width:0}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}

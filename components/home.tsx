@@ -75,23 +75,6 @@ export function FeaturedProducts({ products, slugById }: { products: Product[]; 
   );
 }
 
-export function DealsBanner() {
-  return (
-    <section className="deals" style={{ background: 'var(--color-accent-800)', borderRadius: 28, padding: 8, alignItems: 'center', overflow: 'hidden', marginTop: 40 }}>
-      <div className="deals-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <span style={{ alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', color: '#fff', background: 'var(--color-gold-2)', padding: '6px 13px', borderRadius: 999, marginBottom: 20 }}>Florida Stock</span>
-        <h2 style={{ lineHeight: .98, margin: 0, color: '#fff' }}>Liquidation<br /><span style={{ color: 'var(--color-gold-2)' }}>Deals</span></h2>
-        <p style={{ fontSize: 16, color: 'rgba(255,255,255,.8)', margin: '16px 0 28px', maxWidth: 420 }}>Brand-new tooling, below original selling prices. Limited quantities — once it&apos;s gone, it&apos;s gone.</p>
-        <Link href="/category/square-end-mills" className="h-gold" style={{ alignSelf: 'flex-start', height: 52, padding: '0 26px', fontSize: 15, fontWeight: 600, color: '#fff', background: 'var(--color-gold-2)', border: 0, borderRadius: 14, display: 'inline-flex', alignItems: 'center' }}>Shop liquidation inventory<ArrowR w={2.4} s={16} /></Link>
-      </div>
-      <div style={{ position: 'relative', aspectRatio: '16/9', background: '#0f3320', borderRadius: 22, overflow: 'hidden' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/img/deals-img.webp" alt="Florida Stock — Liquidation Deals" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-      </div>
-    </section>
-  );
-}
-
 export function BrandsStrip() {
   const brands = ['YG-1', 'Guhring', 'Harvey Tool', 'GWS · Monster', 'Balax', 'Ingersoll', 'Micro 100', 'Starrett', 'Titan', 'Fullerton'];
   return (
