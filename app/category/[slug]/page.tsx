@@ -7,7 +7,7 @@ import { FilterRail, SortSelect } from '@/components/browse';
 
 export const revalidate = 300;
 
-type SP = { flutes?: string; coating?: string; system?: string; sort?: string; page?: string };
+type SP = { flutes?: string; coating?: string; system?: string; geometry?: string; flat?: string; app?: string; sort?: string; page?: string };
 
 export default async function CategoryPage({
   params,
@@ -47,6 +47,9 @@ export default async function CategoryPage({
       flutes: sp.flutes?.split(',').map(Number).filter(Boolean),
       coatings: sp.coating?.split(',').filter(Boolean),
       systems: sp.system?.split(',').filter(Boolean),
+      geometries: sp.geometry?.split(',').filter(Boolean),
+      flats: sp.flat?.split(',').filter(Boolean),
+      applications: sp.app?.split(',').filter(Boolean),
       sort: sp.sort,
       page,
       pageSize: 24,
@@ -54,10 +57,9 @@ export default async function CategoryPage({
   ]);
 
   const nextParams = new URLSearchParams();
-  if (sp.flutes) nextParams.set('flutes', sp.flutes);
-  if (sp.coating) nextParams.set('coating', sp.coating);
-  if (sp.system) nextParams.set('system', sp.system);
-  if (sp.sort) nextParams.set('sort', sp.sort);
+  for (const [k, v] of Object.entries({ flutes: sp.flutes, coating: sp.coating, system: sp.system, geometry: sp.geometry, flat: sp.flat, app: sp.app, sort: sp.sort })) {
+    if (v) nextParams.set(k, v);
+  }
   nextParams.set('page', String(page + 1));
 
   return (

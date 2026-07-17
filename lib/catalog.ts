@@ -177,6 +177,9 @@ export type ProductQuery = {
   flutes?: number[];
   coatings?: string[];
   systems?: string[];
+  geometries?: string[];
+  flats?: string[];
+  applications?: string[];
   sort?: string;
   page?: number;
   pageSize?: number;
@@ -191,6 +194,9 @@ export async function getProducts(q: ProductQuery): Promise<{ items: Product[]; 
     if (q.flutes?.length) query = query.in('flutes', q.flutes);
     if (q.coatings?.length) query = query.in('coating', q.coatings);
     if (q.systems?.length) query = query.in('measurement_system', q.systems);
+    if (q.geometries?.length) query = query.in('specs->>geometry', q.geometries);
+    if (q.flats?.length) query = query.in('specs->>flat', q.flats);
+    if (q.applications?.length) query = query.in('specs->>application', q.applications);
 
     switch (q.sort) {
       case 'dia-asc':
@@ -212,28 +218,42 @@ export async function getProducts(q: ProductQuery): Promise<{ items: Product[]; 
   }
 }
 
-/** Distinct flute counts & coatings present in a category, for the filter rail. */
-export async function getCategoryFacets(categoryId: string) {
+export type Facets = {
+  flutes: number[];
+  coatings: string[];
+  systems: string[];
+  geometries: string[];
+  flats: string[];
+  applications: string[];
+};
+
+/** Distinct facet values actually present in a category, for the filter rail. */
+export async function getCategoryFacets(categoryId: string): Promise<Facets> {
   const sb = getSupabase();
-  const empty = { flutes: [] as number[], coatings: [] as string[], systems: [] as string[] };
+  const empty: Facets = { flutes: [], coatings: [], systems: [], geometries: [], flats: [], applications: [] };
   try {
     const { data } = await sb
       .from('products')
-      .select('flutes,coating,measurement_system')
+      .select('flutes,coating,measurement_system,specs')
       .eq('category_id', categoryId)
       .limit(5000);
-    const flutes = new Set<number>();
-    const coatings = new Set<string>();
-    const systems = new Set<string>();
+    const flutes = new Set<number>(), coatings = new Set<string>(), systems = new Set<string>();
+    const geometries = new Set<string>(), flats = new Set<string>(), applications = new Set<string>();
     (data ?? []).forEach((r: any) => {
       if (r.flutes != null) flutes.add(r.flutes);
       if (r.coating) coatings.add(r.coating);
       if (r.measurement_system) systems.add(r.measurement_system);
+      if (r.specs?.geometry) geometries.add(r.specs.geometry);
+      if (r.specs?.flat) flats.add(r.specs.flat);
+      if (r.specs?.application) applications.add(r.specs.application);
     });
     return {
       flutes: [...flutes].sort((a, b) => a - b),
       coatings: [...coatings].sort(),
       systems: [...systems].sort(),
+      geometries: [...geometries].sort(),
+      flats: [...flats].sort(),
+      applications: [...applications].sort(),
     };
   } catch {
     return empty;
