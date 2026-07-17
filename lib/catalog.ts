@@ -26,6 +26,7 @@ export type Category = {
   description: string | null;
   parent_id: string | null;
   sort_order: number;
+  image_url?: string | null;
   count?: number;
 };
 
@@ -38,7 +39,7 @@ export async function getCategories(): Promise<Category[]> {
   try {
     const { data: cats } = await sb
       .from('categories')
-      .select('id,slug,name,description,parent_id,sort_order')
+      .select('id,slug,name,description,parent_id,sort_order,image_url')
       .not('parent_id', 'is', null)
       .order('sort_order');
     if (!cats) return [];
@@ -62,7 +63,7 @@ export async function getTopCategories(): Promise<Category[]> {
   try {
     const { data: cats } = await sb
       .from('categories')
-      .select('id,slug,name,description,parent_id,sort_order')
+      .select('id,slug,name,description,parent_id,sort_order,image_url')
       .is('parent_id', null)
       .order('sort_order');
     if (!cats) return [];
@@ -89,7 +90,7 @@ export async function getChildCategories(parentId: string): Promise<Category[]> 
   try {
     const { data: cats } = await sb
       .from('categories')
-      .select('id,slug,name,description,parent_id,sort_order')
+      .select('id,slug,name,description,parent_id,sort_order,image_url')
       .eq('parent_id', parentId)
       .order('sort_order');
     if (!cats) return [];
@@ -132,7 +133,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   try {
     const { data } = await sb
       .from('categories')
-      .select('id,slug,name,description,parent_id,sort_order')
+      .select('id,slug,name,description,parent_id,sort_order,image_url')
       .eq('slug', slug)
       .single();
     return (data as Category) ?? null;
@@ -146,7 +147,7 @@ export async function getCategoryById(id: string): Promise<Category | null> {
   try {
     const { data } = await sb
       .from('categories')
-      .select('id,slug,name,description,parent_id,sort_order')
+      .select('id,slug,name,description,parent_id,sort_order,image_url')
       .eq('id', id)
       .single();
     return (data as Category) ?? null;

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { type Category, type Product } from '@/lib/catalog';
 import { ProductCard } from './ProductCard';
+import { CategoryCard } from './CategoryCard';
 
 const ArrowR = ({ s = 17, w = 2.2 }: { s?: number; w?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 8 }}><path d="m9 18 6-6-6-6" /></svg>;
 const Chevron = ({ s = 15 }: { s?: number }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>;
@@ -50,15 +51,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
     <section className="section-pad">
       <SectionHead eyebrow="Browse the catalog" title="Shop by category" cta="View all categories" />
       <div className="cat-grid">
-        {categories.map((c) => (
-          <Link key={c.slug} href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 22, padding: 22, minHeight: 130, borderRadius: 20, background: 'var(--color-surface)' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', background: 'var(--color-surface-2)', padding: '4px 10px', borderRadius: 999 }}>{c.count} items</span>
-              <span style={{ width: 30, height: 30, borderRadius: 10, background: 'var(--color-gold-100)', display: 'grid', placeItems: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold-700)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg></span>
-            </div>
-            <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.15, color: 'var(--color-text)' }}>{c.name}</div>
-          </Link>
-        ))}
+        {categories.map((c) => <CategoryCard key={c.slug} c={c} />)}
       </div>
     </section>
   );

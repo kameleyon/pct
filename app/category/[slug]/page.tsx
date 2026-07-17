@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getCategoryBySlug, getChildCategories, getCategoryFacets, getProducts } from '@/lib/catalog';
 import { ProductCard } from '@/components/ProductCard';
+import { CategoryCard } from '@/components/CategoryCard';
 import { FilterRail, SortSelect } from '@/components/browse';
 
 export const revalidate = 300;
@@ -31,15 +32,7 @@ export default async function CategoryPage({
         <h1 style={{ fontSize: 34, margin: '0 0 6px' }}>{category.name}</h1>
         <div style={{ fontSize: 13.5, color: 'var(--muted)', fontWeight: 600, maxWidth: 640, marginBottom: 28 }}>{category.description}</div>
         <div className="cat-grid">
-          {children.map((c) => (
-            <Link key={c.slug} href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 22, padding: 22, minHeight: 130, borderRadius: 20, background: 'var(--surface)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', background: 'var(--surface-2)', padding: '4px 10px', borderRadius: 999 }}>{c.count} items</span>
-                <span style={{ width: 30, height: 30, borderRadius: 10, background: 'var(--gold-100)', display: 'grid', placeItems: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-700)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg></span>
-              </div>
-              <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.15 }}>{c.name}</div>
-            </Link>
-          ))}
+          {children.map((c) => <CategoryCard key={c.slug} c={c} />)}
         </div>
       </main>
     );
