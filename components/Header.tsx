@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { MobileNav } from './MobileNav';
 import { getProductCountLabel } from '@/lib/catalog';
+import { getSession } from '@/lib/auth';
+import { HeaderAccount } from './auth/HeaderAccount';
+import { CartButton } from './cart/CartButton';
 
 const NAV: [string, string][] = [
   ['End Mills', '/category/end-mills'],
@@ -13,7 +16,7 @@ const NAV: [string, string][] = [
 ];
 
 export async function Header() {
-  const count = await getProductCountLabel();
+  const [count, session] = await Promise.all([getProductCountLabel(), getSession()]);
   return (
     <>
       {/* ===== UTILITY BAR ===== */}
@@ -25,8 +28,7 @@ export async function Header() {
           </div>
           <div className="util-hide" style={{ display: 'flex', alignItems: 'center', gap: 22, fontWeight: 600 }}>
             <a href="tel:+18137708795" style={{ color: 'inherit', display: 'inline-flex', gap: 6, alignItems: 'center' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" /></svg>(813) 770-8795</a>
-            <span style={{ color: 'var(--color-gold-700)', cursor: 'pointer', display: 'inline-flex', gap: 6, alignItems: 'center', fontWeight: 600 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 15 9l7 .6-5.3 4.6L18.5 21 12 17.3 5.5 21l1.8-6.8L2 9.6 9 9z" /></svg>VIP Program</span>
-            <span style={{ cursor: 'pointer' }}>Sign In / Register</span>
+            <HeaderAccount session={session} />
           </div>
         </div>
       </div>
@@ -64,10 +66,7 @@ export async function Header() {
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" /></svg>
               <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.01em' }}>Favorites</span>
             </button>
-            <button className="h-green" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: 'var(--color-accent)', border: 0, borderRadius: 14, cursor: 'pointer', color: '#fff', padding: '13px 20px', marginLeft: 6 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></svg>
-              <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '.01em' }}>Cart</span>
-            </button>
+            <CartButton />
           </div>
         </div>
       </div>
