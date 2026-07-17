@@ -115,6 +115,18 @@ export async function getCategorySlugMap(): Promise<Record<string, string>> {
   }
 }
 
+/** Live catalog size, floored to the nearest hundred for display ("8,600+"). */
+export async function getProductCountLabel(): Promise<string> {
+  const sb = getSupabase();
+  try {
+    const { count } = await sb.from('products').select('*', { count: 'exact', head: true });
+    const n = Math.floor((count ?? 0) / 100) * 100;
+    return n > 0 ? `${n.toLocaleString('en-US')}+` : '';
+  } catch {
+    return '';
+  }
+}
+
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const sb = getSupabase();
   try {
@@ -287,6 +299,30 @@ const CATEGORY_IMAGE: Record<string, string> = {
   'r-ofx-upcut': '/slots/R-1-Flute-Upcut-OFX-1-768x161.png',
   'r-ofx-downcut': '/slots/R-1-Flute-Downcut-OFX-1-768x133.png',
   'r-veining-bits': '/slots/R-Veining-Bit-768x139.png',
+  // 2-Flute router lines (closest-match photo where the line has none)
+  'r2-upcut-spiral': '/slots/R-2-Flute-Upcut-Spiral-Endmill-End-1.png',
+  'r2-downcut-spiral': '/slots/R-2-Flute-Downcut-Spiral-Endmill-End.png',
+  'r2-upcut-slow': '/slots/R-2-Flute-Upcut-Slow-Helix-1.png',
+  'r2-downcut-slow': '/slots/R-2-Flute-Downcut-Slow-Helix-1.png',
+  'r2-o-upcut-slow': '/slots/R-2-O-Flute-Downcut-Slow-Spiral-1.png',
+  'r2-o-downcut-slow': '/slots/R-2-O-Flute-Downcut-Slow-Spiral-1.png',
+  'r2-upcut-chipbreaker': '/slots/R-Two-Flute-Upcut-Spiral-Chipbreaker.png',
+  'r2-downcut-chipbreaker': '/slots/R-2-Flute-Downcut-Spiral-Chipbreaker-Finisher.png',
+  'r2-upcut-high-impact': '/slots/R-2-Flute-Upcut-Spiral-Endmill-End-1.png',
+  'r2-downcut-high-impact': '/slots/R-2-Flute-Downcut-Spiral.png',
+  'r2-upcut-chipbreaker-hi': '/slots/R-Two-Flute-Upcut-Spiral-Chipbreaker-1.png',
+  'r2-downcut-chipbreaker-hi': '/slots/R-2-Flute-Downcut-Spiral-Chipbreaker-Finisher-1.png',
+  'r2-compression': '/slots/R-Two-Flute-Mortise-Compression-Endmill-End.png',
+  'r2-mortise-compression': '/slots/R-Two-Flute-Mortise-Compression-Endmill-End.png',
+  'r2-chipbreaker-compression': '/slots/R-Two-Flute-Mortise-Compression-Endmill-End.png',
+  'r2-up-plunge': '/slots/R-2-Flute-Upcut-Spiral-Plunge-Fishtail-1.png',
+  'r2-downcut-fishtail': '/slots/R-2-Flute-Downcut-Fishtail.png',
+  'r2-straight-plunge': '/slots/R-2-Flute-Straight-Cut-Plunge-Fishtail-1.png',
+  'r2-shear-v-bottom': '/slots/R-2-Flute-V-Bottom-90-Point-1.png',
+  'r2-v-edge-rounding': '/slots/R-2-Flute-Straight-V-Edge-Rounding.png',
+  'r2-o-edge-rounding': '/slots/R-2-Flute-O-Flute-Straight-Cut-with-Edge-Rounding-1.png',
+  'r2-rout-chamfer': '/slots/R-2-Flute-O-Flute-Straight-Cut-Endmill-End-1.png',
+  'r2-upcut-bottom-surface': '/slots/R-2-Flute-Upcut-Bottom-Surface-1.png',
 };
 
 export const categoryImage = (slug: string): string =>
