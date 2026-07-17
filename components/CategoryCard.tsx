@@ -7,32 +7,38 @@ const Arrow = () => (
   </span>
 );
 
+// Bottom row shared by both variants: name + count on the left (shrinkable), arrow top-right.
+const Foot = ({ name, count }: { name: string; count: number }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginTop: 'auto' }}>
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.25, color: 'var(--color-text)' }}>{name}</div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-2)', marginTop: 4 }}>{count} items</div>
+    </div>
+    <Arrow />
+  </div>
+);
+
 export function CategoryCard({ c }: { c: Category }) {
-  // Cover variant — image on top (transparent, on the card surface), name below
+  const base: React.CSSProperties = {
+    color: 'inherit', display: 'flex', flexDirection: 'column', gap: 14,
+    padding: 16, minHeight: 150, borderRadius: 20, background: 'var(--color-surface)',
+  };
+
   if (c.image_url) {
     return (
-      <Link href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', padding: 10, borderRadius: 20, background: 'var(--color-surface)' }}>
-        <div style={{ position: 'relative', aspectRatio: '16/10', borderRadius: 13, overflow: 'hidden' }}>
+      <Link href={`/category/${c.slug}`} className="h-cat" style={base}>
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/10' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={c.image_url} alt={c.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
-          <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', background: 'var(--color-surface-2)', padding: '4px 10px', borderRadius: 999 }}>{c.count} items</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '13px 10px 8px' }}>
-          <span style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.15 }}>{c.name}</span>
-          <Arrow />
-        </div>
+        <Foot name={c.name} count={c.count ?? 0} />
       </Link>
     );
   }
 
-  // Text variant — categories without a cover yet
   return (
-    <Link href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 22, padding: 22, minHeight: 130, borderRadius: 20, background: 'var(--color-surface)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', background: 'var(--color-surface-2)', padding: '4px 10px', borderRadius: 999 }}>{c.count} items</span>
-        <Arrow />
-      </div>
-      <div style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.15 }}>{c.name}</div>
+    <Link href={`/category/${c.slug}`} className="h-cat" style={base}>
+      <Foot name={c.name} count={c.count ?? 0} />
     </Link>
   );
 }

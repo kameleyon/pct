@@ -4,7 +4,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Precise Cut Tools — Precision Cutting Tools',
+  title: 'Precision CNC Tools — Precision Cutting Tools',
   description:
     'Thousands of precision cutting tools stocked in Zephyrhills, Florida — factory-direct access to 120+ trusted brands.',
 };

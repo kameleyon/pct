@@ -6,7 +6,7 @@ export function Footer() {
       <footer className="pct-foot" style={{ background: 'var(--color-accent-800)', color: 'rgba(255,255,255,.72)', borderRadius: 28, overflow: 'hidden' }}>
         <div className="foot-grid">
           <div>
-            <div style={{ fontWeight: 600, fontSize: 20, color: '#fff', letterSpacing: '.01em' }}>Precise Cut Tools</div>
+            <div style={{ fontWeight: 600, fontSize: 20, color: '#fff', letterSpacing: '.01em' }}>Precision CNC Tools</div>
             <div style={{ fontSize: 10.5, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--color-gold-2)', marginTop: 6, fontWeight: 600 }}>Precision Cutting Tools</div>
             <p style={{ fontSize: 13.5, lineHeight: 1.6, margin: '20px 0 0', color: 'rgba(255,255,255,.62)' }}>Zephyrhills, Florida</p>
             <a href="tel:+18137708795" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 14, color: '#fff', fontWeight: 600, fontSize: 17 }}>(813) 770-8795</a>
@@ -38,7 +38,7 @@ export function Footer() {
           </div>
         </div>
         <div className="foot-bottom" style={{ margin: '34px 0 0', borderTop: '1px solid rgba(255,255,255,.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>© 2026 Precise Cut Tools, Inc. · All rights reserved</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>© 2026 Precision CNC Tools, Inc. · All rights reserved</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             <span style={{ cursor: 'pointer', fontSize: 12 }}>Privacy</span><span style={{ cursor: 'pointer', fontSize: 12 }}>Returns</span><span style={{ cursor: 'pointer', fontSize: 12 }}>Terms</span>
             <div style={{ display: 'flex', gap: 7 }}>

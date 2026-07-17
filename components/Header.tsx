@@ -36,9 +36,9 @@ export async function Header() {
         <div className="wrap mainbar" style={{ paddingTop: 18, paddingBottom: 18 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 13, flex: 'none' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/pct-logo.png" alt="Precise Cut Tools" style={{ height: 54, width: 54, objectFit: 'contain', display: 'block', flex: 'none' }} />
+            <img src="/brand/pct-logo.png" alt="Precision CNC Tools" style={{ height: 54, width: 54, objectFit: 'contain', display: 'block', flex: 'none' }} />
             <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-              <span style={{ fontWeight: 600, fontSize: 21, letterSpacing: '.01em', color: 'var(--color-accent)' }}>Precise Cut Tools</span>
+              <span style={{ fontWeight: 600, fontSize: 21, letterSpacing: '.01em', color: 'var(--color-accent)' }}>Precision CNC Tools</span>
               <span style={{ fontSize: 10.5, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--color-gold-700)', marginTop: 6, fontWeight: 600 }}>Precision Cutting Tools</span>
             </span>
           </Link>
