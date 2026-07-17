@@ -8,26 +8,26 @@ const Arrow = () => (
 );
 
 export function CategoryCard({ c }: { c: Category }) {
-  // Cover variant — used when the category has a cover image
+  // Cover variant — text on top (level with the other cards), image floating below
   if (c.image_url) {
     return (
-      <Link href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', padding: 10, borderRadius: 20, background: 'var(--color-surface)' }}>
-        <div style={{ position: 'relative', aspectRatio: '16/10', borderRadius: 13, overflow: 'hidden', background: 'linear-gradient(140deg,#17130c,#050505)' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={c.image_url} alt={c.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,.45)', padding: '4px 10px', borderRadius: 999 }}>{c.count} items</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '13px 10px 8px' }}>
-          <span style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.15 }}>{c.name}</span>
+      <Link href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', gap: 16, padding: 22, borderRadius: 20, background: 'var(--color-surface)' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', background: 'var(--color-surface-2)', padding: '4px 10px', borderRadius: 999 }}>{c.count} items</span>
           <Arrow />
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.15 }}>{c.name}</div>
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', marginTop: 'auto' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={c.image_url} alt={c.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
       </Link>
     );
   }
 
-  // Text variant — categories without a cover yet
+  // Text variant — categories without a cover yet (same top structure as the cover card)
   return (
-    <Link href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 22, padding: 22, minHeight: 130, borderRadius: 20, background: 'var(--color-surface)' }}>
+    <Link href={`/category/${c.slug}`} className="h-cat" style={{ color: 'inherit', display: 'flex', flexDirection: 'column', gap: 16, padding: 22, minHeight: 130, borderRadius: 20, background: 'var(--color-surface)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', background: 'var(--color-surface-2)', padding: '4px 10px', borderRadius: 999 }}>{c.count} items</span>
         <Arrow />
