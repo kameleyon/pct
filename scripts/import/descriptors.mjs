@@ -56,6 +56,8 @@ export const GEOMETRY = {
   'r2-o-edge-rounding': 'O-Flute Edge-Rounding Router',
   'r2-rout-chamfer': 'Straight Rout & Chamfer Router',
   'r2-upcut-bottom-surface': 'Upcut Bottom-Surface Router',
+  // ---- Reamers ----
+  'rm-45-reamers': '45° Reamer',
 };
 
 const V = 'hp-v4-end-mills', V5 = 'hp-v5-end-mills', HY5 = 'hp-hy5-end-mills', F45 = 'hp-f45-end-mills',
@@ -190,10 +192,14 @@ export const DESCRIPTORS = [
   { file: '248 2FL Straight Rout and Chamfer.csv', category: 'r2-rout-chamfer', system: 'Imperial', fixedFlutes: 2 },
   { file: '249 2FL Upcut Bottom Surface.csv', category: 'r2-upcut-bottom-surface', system: 'Imperial', fixedFlutes: 2 },
   { file: '249 2FL Upcut Bottom Surface Metric.csv', category: 'r2-upcut-bottom-surface', system: 'Metric', fixedFlutes: 2 },
+
+  // ==== REAMERS (explicit Flutes column; part number in "Uncoated") ====
+  { file: 'FRT 45 Degree Reamer.csv', category: 'rm-45-reamers', system: 'Imperial' },
 ];
 
 // Exact-duplicate "(1)" exports intentionally skipped.
 export const SKIPPED = [
   'FR Mold Mill CR Necked (1).csv', 'FRT Corner Radius Mold Mills Long (1).csv',
   'FRT Corner Radius Necked Axmills (1).csv', 'MET Medium Pitch Roughers (1).csv', 'MET SQ Chipbreaker Axmills (1).csv',
+  'FRT 45 Degree Reamer (1).csv',
 ];

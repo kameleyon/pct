@@ -344,6 +344,8 @@ const CATEGORY_IMAGE: Record<string, string> = {
   'r2-o-edge-rounding': '/slots/R-2-Flute-O-Flute-Straight-Cut-with-Edge-Rounding-1.png',
   'r2-rout-chamfer': '/slots/R-2-Flute-O-Flute-Straight-Cut-Endmill-End-1.png',
   'r2-upcut-bottom-surface': '/slots/R-2-Flute-Upcut-Bottom-Surface-1.png',
+  // Reamers
+  'rm-45-reamers': '/slots/Reamer-4FL.jpg',
 };
 
 export const categoryImage = (slug: string): string =>

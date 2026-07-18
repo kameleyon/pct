@@ -10,7 +10,7 @@ const NAV: [string, string][] = [
   ['High Performance End Mills', '/category/high-performance-end-mills'],
   ['High Performance Routers', '/category/high-performance-routers'],
   ['Drills', '#'],
-  ['Reamers & Threadmills', '#'],
+  ['Reamers & Threadmills', '/category/reamers'],
   ['Burs & Fiberglass Routing', '#'],
   ['Dental Tools', '#'],
 ];
