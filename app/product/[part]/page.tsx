@@ -23,7 +23,6 @@ function specRows(p: Product): [string, string][] {
   push('Point Angle', s.point_angle != null ? `${s.point_angle}°` : null);
   push('Coating', p.coating);
   push('Material', p.material);
-  push('Measurement', p.measurement_system);
   push('Series', s.series);
   return rows;
 }
@@ -79,11 +78,6 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 32, fontWeight: 600, lineHeight: 1 }}>Request a Quote</span>
               <span style={{ fontSize: 13, color: 'var(--muted-2)' }}>volume &amp; contract pricing</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, background: 'var(--surface-2)', borderRadius: 14, padding: '12px 16px' }}>
-              <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--green)', animation: 'pctpulse 1.8s infinite', flex: 'none' }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--green)' }}>Factory-direct</span>
-              <span style={{ fontSize: 13, color: 'var(--muted)' }}>· ground &amp; coated to spec in the USA</span>
             </div>
           </div>
 

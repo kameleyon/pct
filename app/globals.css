@@ -107,11 +107,15 @@ html,body{overflow-x:hidden;max-width:100%}
   .foot-bottom{padding:18px 20px}
   .util-hide{display:none!important}
   .section-pad{padding:36px 0 8px}
-  .hero-stats>*{padding:0 10px}
-  .hstat-num{font-size:19px}
+  .hero-stats>*{padding:0 8px}
+  .hstat-num{font-size:17px;white-space:nowrap}
 }
 @media (max-width:640px){
   .feat-grid{grid-template-columns:1fr}
   .browse-grid{grid-template-columns:1fr}
   .vip-grid{grid-template-columns:1fr}
+}
+@media (max-width:460px){
+  .hero-stats>*{padding:0 5px}
+  .hstat-num{font-size:14px}
 }

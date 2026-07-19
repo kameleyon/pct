@@ -7,7 +7,7 @@ import { FilterRail, SortSelect } from '@/components/browse';
 
 export const revalidate = 300;
 
-type SP = { flutes?: string; coating?: string; system?: string; geometry?: string; flat?: string; app?: string; cut?: string; sort?: string; page?: string };
+type SP = { flutes?: string; coating?: string; system?: string; geometry?: string; flat?: string; app?: string; cut?: string; dia?: string; shk?: string; len?: string; pt?: string; sort?: string; page?: string };
 
 export default async function CategoryPage({
   params,
@@ -52,6 +52,10 @@ export default async function CategoryPage({
       flats: sp.flat?.split(',').filter(Boolean),
       applications: sp.app?.split(',').filter(Boolean),
       cuts: sp.cut?.split(',').filter(Boolean),
+      diameters: sp.dia?.split(',').filter(Boolean),
+      shanks: sp.shk?.split(',').filter(Boolean),
+      lengths: sp.len?.split(',').filter(Boolean),
+      pointAngles: sp.pt?.split(',').filter(Boolean),
       sort: sp.sort,
       page,
       pageSize: 24,
@@ -59,7 +63,7 @@ export default async function CategoryPage({
   ]);
 
   const nextParams = new URLSearchParams();
-  for (const [k, v] of Object.entries({ flutes: sp.flutes, coating: sp.coating, system: sp.system, geometry: sp.geometry, flat: sp.flat, app: sp.app, cut: sp.cut, sort: sp.sort })) {
+  for (const [k, v] of Object.entries({ flutes: sp.flutes, coating: sp.coating, system: sp.system, geometry: sp.geometry, flat: sp.flat, app: sp.app, cut: sp.cut, dia: sp.dia, shk: sp.shk, len: sp.len, pt: sp.pt, sort: sp.sort })) {
     if (v) nextParams.set(k, v);
   }
   nextParams.set('page', String(page + 1));

@@ -1,5 +1,5 @@
 import { getTopCategories, getFeatured, getCategorySlugMap, getProductCountLabel } from '@/lib/catalog';
-import { Hero, CategoryGrid, FeaturedProducts, BrandsStrip, VipBand } from '@/components/home';
+import { Hero, CategoryGrid, FeaturedProducts, BrandsStrip } from '@/components/home';
 
 export const revalidate = 300;
 
@@ -12,7 +12,6 @@ export default async function HomePage() {
       <CategoryGrid categories={categories} />
       <FeaturedProducts products={featured} slugById={slugById} />
       <BrandsStrip />
-      <VipBand />
     </main>
   );
 }

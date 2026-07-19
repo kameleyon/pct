@@ -31,14 +31,14 @@ export function FilterRail({ facets }: { facets: Facets }) {
   const pathname = usePathname();
   const params = useSearchParams();
   const toggle = useToggle();
-  const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system'];
+  const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system', 'dia', 'shk', 'len', 'pt'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
 
   const Chips = ({ title, param, values }: { title: string; param: string; values: string[] }) =>
     values.length > 1 ? (
       <div style={{ padding: '16px 0 4px', borderTop: '1px solid rgba(43,42,38,.07)' }}>
         <div style={label}>{title}</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxHeight: values.length > 14 ? 168 : undefined, overflowY: values.length > 14 ? 'auto' : undefined }}>
           {values.map((v) => <span key={v} onClick={() => toggle(param, v)} style={chip(has(params, param, v))}>{v}</span>)}
         </div>
       </div>
@@ -67,13 +67,17 @@ export function FilterRail({ facets }: { facets: Facets }) {
         <span style={{ fontSize: 14, fontWeight: 600 }}>Filters</span>
         {anyFilter && <span onClick={() => router.push(pathname)} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--muted-2)' }}>Clear all</span>}
       </div>
+      <Chips title="Measurement" param="system" values={facets.systems} />
+      <Chips title="Cutting Diameter" param="dia" values={facets.diameters} />
+      <Chips title="Shank Diameter" param="shk" values={facets.shanks} />
+      <Chips title="Overall Length" param="len" values={facets.lengths} />
       <Chips title="Flutes" param="flutes" values={facets.flutes.map(String)} />
       <Chips title="Geometry" param="geometry" values={facets.geometries} />
       <Checks title="Cut" param="cut" values={facets.cuts} />
       <Checks title="Coating" param="coating" values={facets.coatings} />
-      <Chips title="Shank" param="flat" values={facets.flats} />
+      <Chips title="Point Angle" param="pt" values={facets.pointAngles} />
       <Checks title="Application" param="app" values={facets.applications} />
-      <Chips title="Measurement" param="system" values={facets.systems} />
+      <Chips title="Shank Flat" param="flat" values={facets.flats} />
     </aside>
   );
 }

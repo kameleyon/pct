@@ -201,6 +201,10 @@ export type ProductQuery = {
   flats?: string[];
   applications?: string[];
   cuts?: string[];
+  diameters?: string[];
+  shanks?: string[];
+  lengths?: string[];
+  pointAngles?: string[];
   sort?: string;
   page?: number;
   pageSize?: number;
@@ -219,6 +223,10 @@ export async function getProducts(q: ProductQuery): Promise<{ items: Product[]; 
     if (q.flats?.length) query = query.in('specs->>flat', q.flats);
     if (q.applications?.length) query = query.in('specs->>application', q.applications);
     if (q.cuts?.length) query = query.in('specs->>cut', q.cuts);
+    if (q.diameters?.length) query = query.in('specs->>od_display', q.diameters);
+    if (q.shanks?.length) query = query.in('specs->>shk_display', q.shanks);
+    if (q.lengths?.length) query = query.in('specs->>oal_display', q.lengths);
+    if (q.pointAngles?.length) query = query.in('specs->>point_angle', q.pointAngles.map((p) => p.replace('°', '')));
 
     switch (q.sort) {
       case 'dia-asc':
@@ -248,12 +256,20 @@ export type Facets = {
   flats: string[];
   applications: string[];
   cuts: string[];
+  diameters: string[];
+  shanks: string[];
+  lengths: string[];
+  pointAngles: string[];
 };
+
+// dedupe display strings, keeping a numeric sort key, then return sorted by size
+const sortedByNum = (m: Map<string, number>) =>
+  [...m.entries()].sort((a, b) => a[1] - b[1]).map(([display]) => display);
 
 /** Distinct facet values actually present in a category, for the filter rail. */
 export async function getCategoryFacets(categoryId: string): Promise<Facets> {
   const sb = getSupabase();
-  const empty: Facets = { flutes: [], coatings: [], systems: [], geometries: [], flats: [], applications: [], cuts: [] };
+  const empty: Facets = { flutes: [], coatings: [], systems: [], geometries: [], flats: [], applications: [], cuts: [], diameters: [], shanks: [], lengths: [], pointAngles: [] };
   try {
     const { data } = await sb
       .from('products')
@@ -262,14 +278,21 @@ export async function getCategoryFacets(categoryId: string): Promise<Facets> {
       .limit(5000);
     const flutes = new Set<number>(), coatings = new Set<string>(), systems = new Set<string>();
     const geometries = new Set<string>(), flats = new Set<string>(), applications = new Set<string>(), cuts = new Set<string>();
+    const diameters = new Map<string, number>(), shanks = new Map<string, number>(), lengths = new Map<string, number>();
+    const pointAngles = new Map<string, number>();
     (data ?? []).forEach((r: any) => {
+      const s = r.specs ?? {};
       if (r.flutes != null) flutes.add(r.flutes);
       if (r.coating) coatings.add(r.coating);
       if (r.measurement_system) systems.add(r.measurement_system);
-      if (r.specs?.geometry) geometries.add(r.specs.geometry);
-      if (r.specs?.flat) flats.add(r.specs.flat);
-      if (r.specs?.application) applications.add(r.specs.application);
-      if (r.specs?.cut) cuts.add(r.specs.cut);
+      if (s.geometry) geometries.add(s.geometry);
+      if (s.flat) flats.add(s.flat);
+      if (s.application) applications.add(s.application);
+      if (s.cut) cuts.add(s.cut);
+      if (s.od_display) diameters.set(s.od_display, Number(s.od_in) || 0);
+      if (s.shk_display) shanks.set(s.shk_display, Number(s.shk_in) || 0);
+      if (s.oal_display) lengths.set(s.oal_display, Number(s.oal_in) || 0);
+      if (s.point_angle != null) pointAngles.set(`${s.point_angle}°`, Number(s.point_angle) || 0);
     });
     return {
       flutes: [...flutes].sort((a, b) => a - b),
@@ -279,6 +302,10 @@ export async function getCategoryFacets(categoryId: string): Promise<Facets> {
       flats: [...flats].sort(),
       applications: [...applications].sort(),
       cuts: [...cuts].sort(),
+      diameters: sortedByNum(diameters),
+      shanks: sortedByNum(shanks),
+      lengths: sortedByNum(lengths),
+      pointAngles: sortedByNum(pointAngles),
     };
   } catch {
     return empty;
@@ -307,7 +334,7 @@ export function specSummary(p: Product): string {
   return out.join(' · ');
 }
 
-export const BRAND = 'Mastercut';
+export const BRAND = 'Precision';
 
 // Real product photography (dropped into public/slots/), mapped by geometry.
 const CATEGORY_IMAGE: Record<string, string> = {
