@@ -159,6 +159,21 @@ export async function getCategoryById(id: string): Promise<Category | null> {
   }
 }
 
+/** Full ancestry from the top-level category down to (and including) `id`. */
+export async function getCategoryPath(id: string): Promise<Category[]> {
+  const path: Category[] = [];
+  const seen = new Set<string>();
+  let current: string | null = id;
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    const c = await getCategoryById(current);
+    if (!c) break;
+    path.unshift(c);
+    current = c.parent_id;
+  }
+  return path;
+}
+
 /** A spread of representative products for the homepage. */
 // Curated spread of distinct tool types, so the "Customer favorites" row shows
 // variety (different geometries/photos) instead of one series in four sizes.

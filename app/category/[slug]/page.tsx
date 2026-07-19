@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCategoryBySlug, getCategoryById, getChildCategories, getCategoryFacets, getProducts } from '@/lib/catalog';
+import { getCategoryBySlug, getCategoryPath, getChildCategories, getCategoryFacets, getProducts } from '@/lib/catalog';
 import { ProductCard } from '@/components/ProductCard';
 import { CategoryCard } from '@/components/CategoryCard';
 import { FilterRail, SortSelect } from '@/components/browse';
@@ -21,14 +21,24 @@ export default async function CategoryPage({
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
+  // Full ancestry (top-level → immediate parent) for the breadcrumb.
+  const ancestors = category.parent_id ? await getCategoryPath(category.parent_id) : [];
+  const Breadcrumb = () => (
+    <div style={{ fontSize: 12.5, color: 'var(--muted-2)', fontWeight: 600, marginBottom: 16 }}>
+      <Link href="/">Home</Link>
+      {ancestors.map((c) => (
+        <span key={c.id}>{' '}<span style={{ color: '#c9c4ba' }}>/</span>{' '}<Link href={`/category/${c.slug}`}>{c.name}</Link></span>
+      ))}
+      {' '}<span style={{ color: '#c9c4ba' }}>/</span>{' '}<span style={{ color: 'var(--text)' }}>{category.name}</span>
+    </div>
+  );
+
   // Parent category → show its product lines as a subcategory grid.
   const children = await getChildCategories(category.id);
   if (children.length > 0) {
     return (
       <main className="wrap" style={{ paddingTop: 20, paddingBottom: 72 }}>
-        <div style={{ fontSize: 12.5, color: 'var(--muted-2)', fontWeight: 600, marginBottom: 16 }}>
-          <Link href="/">Home</Link> <span style={{ color: '#c9c4ba' }}>/</span> <span style={{ color: 'var(--text)' }}>{category.name}</span>
-        </div>
+        <Breadcrumb />
         <h1 style={{ fontSize: 34, margin: '0 0 6px' }}>{category.name}</h1>
         <div style={{ fontSize: 13.5, color: 'var(--muted)', fontWeight: 600, maxWidth: 640, marginBottom: 28 }}>{category.description}</div>
         <div className="cat-grid">
@@ -39,7 +49,6 @@ export default async function CategoryPage({
   }
 
   // Leaf category → product listing with filters.
-  const parent = category.parent_id ? await getCategoryById(category.parent_id) : null;
   const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
   const [facets, { items, total }] = await Promise.all([
     getCategoryFacets(category.id),
@@ -70,15 +79,7 @@ export default async function CategoryPage({
 
   return (
     <main className="wrap" style={{ paddingTop: 20, paddingBottom: 72 }}>
-      <div style={{ fontSize: 12.5, color: 'var(--muted-2)', fontWeight: 600, marginBottom: 16 }}>
-        <Link href="/">Home</Link> <span style={{ color: '#c9c4ba' }}>/</span>{' '}
-        {parent && (
-          <>
-            <Link href={`/category/${parent.slug}`}>{parent.name}</Link> <span style={{ color: '#c9c4ba' }}>/</span>{' '}
-          </>
-        )}
-        <span style={{ color: 'var(--text)' }}>{category.name}</span>
-      </div>
+      <Breadcrumb />
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 34, margin: '0 0 4px' }}>{category.name}</h1>

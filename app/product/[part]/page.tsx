@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getProductByPart, getCategoryById, categoryImage, BRAND, type Product } from '@/lib/catalog';
+import { getProductByPart, getCategoryById, getCategoryPath, categoryImage, BRAND, type Product } from '@/lib/catalog';
 import { Heart, Coupon, Star, Cart, Truck, Shield, Check } from '@/components/icons';
 
 export const revalidate = 300;
@@ -32,14 +32,21 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
   const product = await getProductByPart(decodeURIComponent(part));
   if (!product) notFound();
   const category = await getCategoryById(product.category_id);
+  const path = await getCategoryPath(product.category_id);
   const rows = specRows(product);
   const powerA = product.coating === 'PowerA (AlTiN)';
 
   return (
     <main className="wrap" style={{ padding: '20px 32px 72px' }}>
       <div style={{ fontSize: 12.5, color: 'var(--muted-2)', fontWeight: 600, marginBottom: 20 }}>
-        <Link href="/">Home</Link> <span style={{ color: '#c9c4ba' }}>/</span>{' '}
-        <Link href={`/category/${category?.slug ?? ''}`}>{category?.name}</Link> <span style={{ color: '#c9c4ba' }}>/</span>{' '}
+        <Link href="/">Home</Link>
+        {path.map((c) => (
+          <span key={c.id}>
+            {' '}<span style={{ color: '#c9c4ba' }}>/</span>{' '}
+            <Link href={`/category/${c.slug}`}>{c.name}</Link>
+          </span>
+        ))}
+        {' '}<span style={{ color: '#c9c4ba' }}>/</span>{' '}
         <span style={{ color: 'var(--text)' }}>{product.part_number}</span>
       </div>
 

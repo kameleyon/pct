@@ -10,6 +10,11 @@ const chip: React.CSSProperties = {
 
 export function ProductCard({ product, categorySlug }: { product: Product; categorySlug: string }) {
   const coated = product.coating && product.coating !== 'Uncoated';
+  // Specials badge: % off when a sale price is set below list. No specials yet → nothing renders.
+  const discountPct =
+    product.price && product.sale_price && product.sale_price < product.price
+      ? Math.round((1 - product.sale_price / product.price) * 100)
+      : 0;
   return (
     <article className="prod-card" style={{ display: 'flex', flexDirection: 'column', background: '#F3EFE5', border: '1px solid rgba(43,42,38,.12)', borderRadius: 20, overflow: 'hidden', height: '100%' }}>
       <Link href={`/product/${encodeURIComponent(product.part_number)}`} style={{ display: 'flex', flexDirection: 'column', padding: 16, flex: 1, color: 'inherit' }}>
@@ -48,10 +53,13 @@ export function ProductCard({ product, categorySlug }: { product: Product; categ
           </span>
         </div>
 
-        {/* price row — quote left, details right, one aligned line */}
+        {/* price row — quote left, specials %OFF right (shown only for sale items) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 16 }}>
           <span style={{ fontWeight: 600, fontSize: 19, color: 'var(--color-text)', lineHeight: 1 }}>Request Quote</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--color-accent)' }}>Get Details<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
+          {/* "Get Details" removed — this slot now shows the specials badge when a sale price is set */}
+          {discountPct > 0 && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 700, color: '#fff', background: 'var(--color-gold)', padding: '5px 10px', borderRadius: 999 }}>{discountPct}% OFF</span>
+          )}
         </div>
       </Link>
 
