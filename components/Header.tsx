@@ -45,7 +45,7 @@ export async function Header() {
             </span>
           </Link>
 
-          <form action="/category/square-end-mills" className="mainbar-search" style={{ display: 'flex', alignItems: 'stretch', background: '#fff', border: '1px solid var(--line)', borderRadius: 16, height: 50, overflow: 'hidden' }}>
+          <form action="/search" className="mainbar-search" style={{ display: 'flex', alignItems: 'stretch', background: '#fff', border: '1px solid var(--line)', borderRadius: 16, height: 50, overflow: 'hidden' }}>
             <select name="cat" style={{ width: 150, border: 0, background: 'transparent', height: '100%', fontWeight: 600, fontSize: 13, paddingLeft: 16, color: '#4a473f' }}>
               <option>All Categories</option><option>End Mills</option><option>High Performance End Mills</option><option>High Performance Routers</option><option>Drills</option><option>Reamers &amp; Threadmills</option><option>Burs &amp; Fiberglass Routing</option><option>Dental Tools</option>
             </select>
@@ -58,10 +58,6 @@ export async function Header() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto', flex: 'none' }}>
             <MobileNav items={NAV} />
-            <button className="h-icon" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: 'none', border: 0, borderRadius: 14, cursor: 'pointer', color: '#4a473f', padding: '8px 12px' }}>
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.01em' }}>Quick Order</span>
-            </button>
             <button className="h-icon" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: 'none', border: 0, borderRadius: 14, cursor: 'pointer', color: '#4a473f', padding: '8px 12px' }}>
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" /></svg>
               <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.01em' }}>Favorites</span>
@@ -77,11 +73,6 @@ export async function Header() {
           {NAV.map(([label, href]) => (
             <Link key={label} className="pct-navlink" href={href}>{label}</Link>
           ))}
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Link className="pct-navlink" href="#">Brands</Link>
-            <Link className="pct-navlink" href="#" style={{ color: 'var(--color-gold-700)' }}>Deals</Link>
-            <Link className="pct-navlink" href="#">Line Card</Link>
-          </div>
         </div>
       </div>
     </>

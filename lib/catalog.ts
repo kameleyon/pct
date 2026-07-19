@@ -159,6 +159,38 @@ export async function getCategoryById(id: string): Promise<Category | null> {
   }
 }
 
+/** Every category, flat, ordered by sort — for the site-wide category filter. */
+export async function getAllCategories(): Promise<Category[]> {
+  const sb = getSupabase();
+  try {
+    const { data } = await sb
+      .from('categories')
+      .select('id,slug,name,description,parent_id,sort_order,image_url')
+      .order('sort_order');
+    return (data as Category[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/** Keyword search across product name & part number, catalog-wide. */
+export async function searchProducts(q: string, limit = 60): Promise<Product[]> {
+  const sb = getSupabase();
+  const term = (q ?? '').replace(/[,%()]/g, ' ').trim();
+  if (!term) return [];
+  try {
+    const { data } = await sb
+      .from('products')
+      .select(PRODUCT_COLS, { count: 'exact' })
+      .or(`name.ilike.%${term}%,part_number.ilike.%${term}%`)
+      .order('part_number')
+      .limit(limit);
+    return (data as Product[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 /** Full ancestry from the top-level category down to (and including) `id`. */
 export async function getCategoryPath(id: string): Promise<Category[]> {
   const path: Category[] = [];

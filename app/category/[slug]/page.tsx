@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCategoryBySlug, getCategoryPath, getChildCategories, getCategoryFacets, getProducts } from '@/lib/catalog';
+import { getCategoryBySlug, getCategoryPath, getAllCategories, getChildCategories, getCategoryFacets, getProducts } from '@/lib/catalog';
 import { ProductCard } from '@/components/ProductCard';
 import { CategoryCard } from '@/components/CategoryCard';
 import { FilterRail, SortSelect } from '@/components/browse';
@@ -77,6 +77,19 @@ export default async function CategoryPage({
   }
   nextParams.set('page', String(page + 1));
 
+  // site-wide category tree for the filter's category browser
+  const allCats = await getAllCategories();
+  const byParent = new Map<string, typeof allCats>();
+  for (const c of allCats) {
+    const k = c.parent_id ?? 'root';
+    (byParent.get(k) ?? byParent.set(k, []).get(k)!).push(c);
+  }
+  const categoryTree: { slug: string; name: string; depth: number }[] = [];
+  const walk = (key: string, depth: number) => {
+    for (const c of byParent.get(key) ?? []) { categoryTree.push({ slug: c.slug, name: c.name, depth }); walk(c.id, depth + 1); }
+  };
+  walk('root', 0);
+
   return (
     <main className="wrap" style={{ paddingTop: 20, paddingBottom: 72 }}>
       <Breadcrumb />
@@ -92,7 +105,7 @@ export default async function CategoryPage({
       </div>
 
       <div className="browse-layout">
-        <FilterRail facets={facets} />
+        <FilterRail facets={facets} categoryTree={categoryTree} currentSlug={slug} />
         <div>
           {items.length === 0 ? (
             <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 48, textAlign: 'center', color: 'var(--muted)' }}>No products match these filters.</div>
