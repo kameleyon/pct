@@ -88,6 +88,11 @@ export const GEOMETRY = {
   'b-diemills': 'Diemill',
   'b-piloted-diemills': 'Piloted Diemill',
   'b-fiberglass-routers': 'Fiberglass Router',
+  // ---- Bur Sets / kits ----
+  'bs-power-pouch': 'Power Pouch Bur Set',
+  'bs-plastic-box': 'Plastic Box Bur Set',
+  'bs-wood-box': 'Wood Box Bur Set',
+  'bs-countertop': 'Countertop Bur Display',
 };
 
 const V = 'hp-v4-end-mills', V5 = 'hp-v5-end-mills', HY5 = 'hp-hy5-end-mills', F45 = 'hp-f45-end-mills',
@@ -267,6 +272,16 @@ export const DESCRIPTORS = [
   { file: 'FRT Piloted Diemills.csv', category: 'b-piloted-diemills', system: 'Imperial' },
   { file: 'FRT Fiberglass Routers.csv', category: 'b-fiberglass-routers', system: 'Imperial', fixedFlutes: 1 },
   { file: 'MET Fiberglass Routers.csv', category: 'b-fiberglass-routers', system: 'Metric', fixedFlutes: 1 },
+
+  // ==== BUR SETS / KITS (non-dimensional — kind: 'set') ====
+  { file: 'FRP Power Pouch Bur Sets.csv', category: 'bs-power-pouch', system: 'Imperial', kind: 'set' },
+  { file: 'MET - Plastic Pouch Sets.csv', category: 'bs-power-pouch', system: 'Metric', kind: 'set' },
+  { file: 'FractionalLongBurSets.csv', category: 'bs-power-pouch', system: 'Imperial', kind: 'set' },
+  { file: 'FRT Plastic Box Bur Sets.csv', category: 'bs-plastic-box', system: 'Imperial', kind: 'set' },
+  { file: 'MET 12 Piece Plastic Box Sets.csv', category: 'bs-plastic-box', system: 'Metric', kind: 'set' },
+  { file: 'FRP Wood Box Bur Sets.csv', category: 'bs-wood-box', system: 'Imperial', kind: 'set' },
+  { file: 'FRT 24 Piece Bur Display.csv', category: 'bs-countertop', system: 'Imperial', kind: 'set' },
+  { file: 'MET 24 Piece Countertop Bur Set.csv', category: 'bs-countertop', system: 'Metric', kind: 'set' },
 ];
 
 // Exact-duplicate "(1)" exports intentionally skipped.

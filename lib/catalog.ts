@@ -428,6 +428,11 @@ const CATEGORY_IMAGE: Record<string, string> = {
   'b-diemills': '/slots/SB-DC-Bur.jpg',
   'b-piloted-diemills': '/slots/SC-DC-Bur.jpg',
   'b-fiberglass-routers': '/slots/Fiberglass-Router-MillEnd.jpg',
+  // Bur Sets
+  'bs-power-pouch': '/slots/Plastic-Box-Bur-Set.jpg',
+  'bs-plastic-box': '/slots/Plastic-Box-Bur-Set.jpg',
+  'bs-wood-box': '/slots/Wood-Box-Bur-Set.jpg',
+  'bs-countertop': '/slots/24-piece-Bur-set.jpg',
 };
 
 export const categoryImage = (slug: string): string =>

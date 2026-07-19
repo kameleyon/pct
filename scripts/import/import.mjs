@@ -113,6 +113,55 @@ function emit(bucket, d, partNumber, flutes, coating, extra, baseSpecs) {
   bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes, coating, specs });
 }
 
+// Bur SETS / kits — no dimensions. The part number lives in a "Part Number"/"Part ID"
+// column, in cut-style columns (one variant each), or, failing both, in a bare-code
+// Description cell. Piece count and included-shapes list are kept as specs.
+function emitSet(d, partNumber, name, specs, bucket) {
+  if (!partNumber) return;
+  if (report.seen.has(partNumber)) {
+    report.rejected.push({ file: d.file, part: partNumber, reason: `duplicate of ${report.seen.get(partNumber)}` });
+    return;
+  }
+  report.seen.set(partNumber, d.file);
+  bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes: null, coating: 'Uncoated', specs: { ...specs, series: String(partNumber).split('-')[0] } });
+}
+
+function processSetFile(d, headers, rows, bucket) {
+  const h = headers.map((x) => String(x).trim().toLowerCase());
+  const idxOf = (re) => h.findIndex((x) => re.test(x));
+  const iDesc = idxOf(/^description$/), iPieces = idxOf(/^pieces$/), iShank = idxOf(/^shank$/);
+  const iBurs = idxOf(/includ/);
+  const partCols = headers.map((hd, i) => ({ hd, i })).filter(({ hd }) => /part\s*number|part\s*id|partnumber/i.test(hd));
+  const cutCols = headers.map((hd, i) => ({ hd, i })).filter(({ hd }) => cutFrom(hd));
+  const setLabel = GEOMETRY[d.category] || 'Bur Set';
+
+  for (const row of rows) {
+    if (row.every((c) => !String(c ?? '').trim())) continue;
+    const g = (i) => (i >= 0 ? String(row[i] ?? '').trim() : '');
+    const pieces = g(iPieces), shank = g(iShank), descRaw = g(iDesc);
+    const burs = g(iBurs).replace(/^burs\s*(shapes\s*)?includ(ed|ing)?\s*:?\s*/i, '').trim();
+    const specs = {};
+    if (pieces) specs.pieces = pieces;
+    if (burs) specs.burs_included = burs;
+    if (shank) specs.shank_display = shank;
+    const descriptive = descRaw && /\s/.test(descRaw) ? descRaw : '';
+    const base = descriptive || (pieces ? `${pieces.replace(/piece/i, '').trim()}-Piece ${setLabel}` : setLabel);
+
+    let emitted = 0;
+    for (const { hd, i } of cutCols) {
+      const cell = g(i); if (!cell) continue;
+      const cut = cutFrom(hd);
+      emitSet(d, cell, `${base} — ${cut}`, { ...specs, cut }, bucket); emitted++;
+    }
+    for (const { i } of partCols) {
+      const cell = g(i); if (!cell) continue;
+      emitSet(d, cell, base, specs, bucket); emitted++;
+    }
+    // fallback: a Description that is really a bare part code (e.g. "DISPLAY2M")
+    if (!emitted && descRaw && /^[A-Z0-9][A-Z0-9-]*$/.test(descRaw)) emitSet(d, descRaw, setLabel, specs, bucket);
+  }
+}
+
 function processFile(d, headers, rows, bucket) {
   const cls = headers.map(classify);
   for (const row of rows) {
@@ -207,7 +256,7 @@ for (const d of DESCRIPTORS) {
   }
   const { headers, rows } = readCsv(readFileSync(join(DATA, d.file), 'utf8'));
   const bucket = [];
-  processFile(d, headers, rows, bucket);
+  (d.kind === 'set' ? processSetFile : processFile)(d, headers, rows, bucket);
   const out = `-- ${d.file} → ${d.category} (${d.system}) — ${bucket.length} products\n${toSql(d.category, bucket)}\n`;
   writeFileSync(join(OUT, `${String(++fileNo).padStart(2, '0')}-${d.file.replace(/\.csv$/, '')}.sql`), out);
   report.files.push({ file: d.file, category: d.category, system: d.system, products: bucket.length });
