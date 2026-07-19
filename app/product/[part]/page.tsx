@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getProductByPart, getCategoryById, getCategoryPath, categoryImage, BRAND, type Product } from '@/lib/catalog';
 import { Heart, Coupon, Star, Cart, Truck, Shield, Check } from '@/components/icons';
+import { BulkPricing } from '@/components/BulkPricing';
 
 export const revalidate = 300;
 
@@ -81,12 +82,7 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
           </div>
           <div style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 18px' }}>Solid carbide{powerA ? ', PowerA (AlTiN) coated' : ''} · <b style={{ color: 'var(--green)' }}>Made in the USA</b></div>
 
-          <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 22, marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 32, fontWeight: 600, lineHeight: 1 }}>Request a Quote</span>
-              <span style={{ fontSize: 13, color: 'var(--muted-2)' }}>volume &amp; contract pricing</span>
-            </div>
-          </div>
+          <BulkPricing price={product.sale_price ?? product.price} />
 
           <div style={{ display: 'flex', gap: 12, marginBottom: 22 }}>
             <input defaultValue="1" style={{ width: 64, height: 52, textAlign: 'center', fontWeight: 600, fontSize: 16, background: '#fff', border: '1px solid rgba(43,42,38,.12)', borderRadius: 14 }} />

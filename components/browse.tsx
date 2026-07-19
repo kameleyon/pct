@@ -4,7 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { type Facets } from '@/lib/catalog';
 
-type Cat = { slug: string; name: string; depth: number };
+type Sub = { slug: string; name: string };
+type Top = { slug: string; name: string; children: Sub[] };
+type CatNav = { tops: Top[]; currentTop: string; activeSlugs: string[] };
 
 const chip = (active: boolean) => ({
   fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 999, cursor: 'pointer',
@@ -33,12 +35,15 @@ const sectionStyle: React.CSSProperties = { padding: '16px 0 4px', borderTop: '1
 const checkBox = (on: boolean) => ({ width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${on ? 'var(--green)' : 'rgba(43,42,38,.22)'}`, background: on ? 'var(--green)' : 'transparent', flex: 'none' as const, display: 'grid' as const, placeItems: 'center' as const });
 const Tick = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>;
 
-export function FilterRail({ facets, categoryTree = [], currentSlug }: { facets: Facets; categoryTree?: Cat[]; currentSlug?: string }) {
+export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const toggle = useToggle();
   const [term, setTerm] = useState('');
+  const [openTop, setOpenTop] = useState(catNav?.currentTop);
+  const activeTop = openTop ?? catNav?.currentTop;
+  const subs = catNav?.tops.find((t) => t.slug === activeTop)?.children ?? [];
   const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system', 'dia', 'shk', 'len', 'pt'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
 
@@ -92,21 +97,36 @@ export function FilterRail({ facets, categoryTree = [], currentSlug }: { facets:
         {anyFilter && <span onClick={() => router.push(pathname)} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--muted-2)' }}>Clear all</span>}
       </div>
 
-      {/* site-wide category browser — current is highlighted, any is one click away */}
-      {categoryTree.length > 0 && (
-        <div style={sectionStyle}>
-          <div style={label}>Category</div>
-          <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', maxHeight: 260, overflowY: 'auto', paddingRight: 6 }}>
-            {categoryTree.map((c) => {
-              const active = c.slug === currentSlug;
+      {/* site-wide category checkboxes — the current top is pre-checked; checking one reveals its subcategories */}
+      {catNav && catNav.tops.length > 0 && (
+        <>
+          <div style={sectionStyle}>
+            <div style={label}>Category</div>
+            {catNav.tops.map((t) => {
+              const on = t.slug === activeTop;
               return (
-                <Link key={c.slug} href={`/category/${c.slug}`} style={{ display: 'block', padding: '5px 8px', paddingLeft: 8 + c.depth * 14, borderRadius: 8, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#fff' : 'var(--color-text)', background: active ? 'var(--green)' : 'transparent', textDecoration: 'none' }}>
-                  {c.name}
-                </Link>
+                <label key={t.slug} onClick={() => setOpenTop(t.slug)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 0', cursor: 'pointer', fontSize: 13, fontWeight: on ? 600 : 400 }}>
+                  <span style={checkBox(on)}>{on && <Tick />}</span>{t.name}
+                </label>
               );
             })}
           </div>
-        </div>
+          {subs.length > 0 && (
+            <div style={sectionStyle}>
+              <div style={label}>Subcategory</div>
+              <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', maxHeight: subs.length > 9 ? 260 : undefined, overflowY: subs.length > 9 ? 'auto' : undefined, paddingRight: subs.length > 9 ? 6 : 0 }}>
+                {subs.map((c) => {
+                  const active = catNav.activeSlugs.includes(c.slug);
+                  return (
+                    <Link key={c.slug} href={`/category/${c.slug}`} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 4px', borderRadius: 8, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? 'var(--green)' : 'var(--color-text)', textDecoration: 'none' }}>
+                      <span style={checkBox(active)}>{active && <Tick />}</span>{c.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <Chips title="Measurement" param="system" values={facets.systems} />

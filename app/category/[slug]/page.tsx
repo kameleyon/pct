@@ -77,18 +77,16 @@ export default async function CategoryPage({
   }
   nextParams.set('page', String(page + 1));
 
-  // site-wide category tree for the filter's category browser
+  // site-wide category nav for the filter: top categories (checkboxes) → their subcategories
   const allCats = await getAllCategories();
-  const byParent = new Map<string, typeof allCats>();
-  for (const c of allCats) {
-    const k = c.parent_id ?? 'root';
-    (byParent.get(k) ?? byParent.set(k, []).get(k)!).push(c);
-  }
-  const categoryTree: { slug: string; name: string; depth: number }[] = [];
-  const walk = (key: string, depth: number) => {
-    for (const c of byParent.get(key) ?? []) { categoryTree.push({ slug: c.slug, name: c.name, depth }); walk(c.id, depth + 1); }
-  };
-  walk('root', 0);
+  const tops = allCats.filter((c) => !c.parent_id).map((t) => ({
+    slug: t.slug,
+    name: t.name,
+    children: allCats.filter((c) => c.parent_id === t.id).map((c) => ({ slug: c.slug, name: c.name })),
+  }));
+  const currentTop = ancestors[0]?.slug ?? slug;
+  const activeSlugs = [...ancestors.map((a) => a.slug), slug];
+  const catNav = { tops, currentTop, activeSlugs };
 
   return (
     <main className="wrap" style={{ paddingTop: 20, paddingBottom: 72 }}>
@@ -105,7 +103,7 @@ export default async function CategoryPage({
       </div>
 
       <div className="browse-layout">
-        <FilterRail facets={facets} categoryTree={categoryTree} currentSlug={slug} />
+        <FilterRail facets={facets} catNav={catNav} />
         <div>
           {items.length === 0 ? (
             <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 48, textAlign: 'center', color: 'var(--muted)' }}>No products match these filters.</div>
