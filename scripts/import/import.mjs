@@ -40,6 +40,8 @@ function classify(header) {
   if (h === 'degree') return { kind: 'taper' };
   if (h === 'flutes') return { kind: 'flutes' };
   if (h === 'lh' || h === 'left hand') return { kind: 'lh' };
+  if (/wire|letter/.test(h)) return { kind: 'wire' };            // drill gauge size (e.g. "#56", "70")
+  if (/point\s*angle|^point$/.test(h)) return { kind: 'point' }; // drill point angle (e.g. "135°")
   return { kind: 'part' };
 }
 // "Part ID", "PartID", "Par Id" (vendor typo)
@@ -79,6 +81,7 @@ function emit(bucket, d, partNumber, flutes, coating, extra, baseSpecs) {
   const specs = { ...baseSpecs, series: partNumber.split('-')[0] };
   if (extra?.flat) specs.flat = extra.flat;
   if (extra?.application) specs.application = extra.application;
+  if (extra?.pointAngle != null) specs.point_angle = extra.pointAngle;
   const name = buildName(specs, flutes, d, coating);
   bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes, coating, specs });
 }
@@ -103,6 +106,11 @@ function processFile(d, headers, rows, bucket) {
         explicitFlutes = parseInt(val, 10);
       } else if (c.kind === 'lh' && val) {
         specs.rotation = 'Left Hand';
+      } else if (c.kind === 'wire' && val) {
+        specs.wire_size = String(val).trim();
+      } else if (c.kind === 'point' && val) {
+        const pa = parseFloat(String(val).replace(/[^\d.]/g, ''));
+        if (Number.isFinite(pa)) specs.point_angle = pa;
       }
     }
     if (!ok) { report.rejected.push({ file: d.file, part: '(row)', reason: 'unparseable dimension', row: row.join(',') }); continue; }
@@ -116,14 +124,18 @@ function processFile(d, headers, rows, bucket) {
       if (!cell) continue;
       const header = headers[i];
       let coating = 'Uncoated', headerFlutes = null, flat = null, application = null;
+      const angleM = String(header).match(/(\d{2,3})\s*°/);              // "90°", "142° PowerA"
+      const pointAngle = angleM ? parseFloat(angleM[1]) : null;
       if (hasVariantSignals(header)) {
         const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; flat = p.flat;
+      } else if (pointAngle != null) {
+        coating = d.fixedCoating ?? 'Uncoated';                          // angle-only header — the variant is the point, not an application
       } else {
         coating = d.fixedCoating ?? 'Uncoated';
         application = applicationFrom(header ?? '') ?? d.fixedApplication ?? null;
       }
       const flutes = explicitFlutes ?? headerFlutes ?? d.fixedFlutes ?? null;
-      emit(bucket, d, cell, flutes, coating, { flat, application }, specs);
+      emit(bucket, d, cell, flutes, coating, { flat, application, pointAngle }, specs);
     }
   }
 }

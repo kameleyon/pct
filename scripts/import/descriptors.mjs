@@ -58,6 +58,14 @@ export const GEOMETRY = {
   'r2-upcut-bottom-surface': 'Upcut Bottom-Surface Router',
   // ---- Reamers ----
   'rm-45-reamers': '45° Reamer',
+  // ---- Standard Carbide Drills ----
+  'dr-jobber-drills': 'Jobber Drill',
+  'dr-stub-drills': 'Stub Drill',
+  'dr-straight-flute-drills': 'Straight Flute Drill',
+  'dr-spade-drills': 'Spade Drill',
+  'dr-nc-spotting-drills': 'NC Spotting Drill',
+  'dr-drill-countersink': 'Drill & Countersink',
+  'dr-medium-length-drills': 'Medium Length Drill',
 };
 
 const V = 'hp-v4-end-mills', V5 = 'hp-v5-end-mills', HY5 = 'hp-hy5-end-mills', F45 = 'hp-f45-end-mills',
@@ -195,11 +203,26 @@ export const DESCRIPTORS = [
 
   // ==== REAMERS (explicit Flutes column; part number in "Uncoated") ====
   { file: 'FRT 45 Degree Reamer.csv', category: 'rm-45-reamers', system: 'Imperial' },
+
+  // ==== STANDARD CARBIDE DRILLS (Uncoated/PowerA; point angle in header or "Point Angle" col) ====
+  { file: 'FRT Jobber Drills.csv', category: 'dr-jobber-drills', system: 'Imperial' },
+  { file: 'MET 2 Flute Jobber.csv', category: 'dr-jobber-drills', system: 'Metric', fixedFlutes: 2 },
+  { file: 'MET 3 Flute Jobber.csv', category: 'dr-jobber-drills', system: 'Metric', fixedFlutes: 3 },
+  { file: 'FRT Stub Drills.csv', category: 'dr-stub-drills', system: 'Imperial' },
+  { file: 'MET Stub Drill.csv', category: 'dr-stub-drills', system: 'Metric', fixedFlutes: 2 },
+  { file: 'FRT Straight Flute Drills.csv', category: 'dr-straight-flute-drills', system: 'Imperial' },
+  { file: 'FRT Spade Drills.csv', category: 'dr-spade-drills', system: 'Imperial' },
+  { file: 'MET Spade Drill.csv', category: 'dr-spade-drills', system: 'Metric', fixedFlutes: 2 },
+  { file: 'FRT NC Spotting Drills.csv', category: 'dr-nc-spotting-drills', system: 'Imperial' },
+  { file: 'MET NC Spotting Drill.csv', category: 'dr-nc-spotting-drills', system: 'Metric' },
+  { file: 'FRT Drill and Countersink.csv', category: 'dr-drill-countersink', system: 'Imperial' },
+  { file: 'MET Drill and Countersink.csv', category: 'dr-drill-countersink', system: 'Metric' },
+  { file: 'MET Medium Length Drill.csv', category: 'dr-medium-length-drills', system: 'Metric', fixedFlutes: 2 },
 ];
 
 // Exact-duplicate "(1)" exports intentionally skipped.
 export const SKIPPED = [
   'FR Mold Mill CR Necked (1).csv', 'FRT Corner Radius Mold Mills Long (1).csv',
   'FRT Corner Radius Necked Axmills (1).csv', 'MET Medium Pitch Roughers (1).csv', 'MET SQ Chipbreaker Axmills (1).csv',
-  'FRT 45 Degree Reamer (1).csv',
+  'FRT 45 Degree Reamer (1).csv', 'FRT NC Spotting Drills (1).csv',
 ];

@@ -346,6 +346,14 @@ const CATEGORY_IMAGE: Record<string, string> = {
   'r2-upcut-bottom-surface': '/slots/R-2-Flute-Upcut-Bottom-Surface-1.png',
   // Reamers
   'rm-45-reamers': '/slots/Reamer-4FL.jpg',
+  // Standard Carbide Drills
+  'dr-jobber-drills': '/slots/JobberDrills.jpg',
+  'dr-stub-drills': '/slots/StubDrill.jpg',
+  'dr-straight-flute-drills': '/slots/JobberDrills.jpg',
+  'dr-spade-drills': '/slots/Spade-Drill.jpg',
+  'dr-nc-spotting-drills': '/slots/NC-Spotting-Drill.jpg',
+  'dr-drill-countersink': '/slots/CenterDrill.jpg',
+  'dr-medium-length-drills': '/slots/JobberDrills.jpg',
 };
 
 export const categoryImage = (slug: string): string =>
