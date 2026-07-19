@@ -27,6 +27,8 @@ const report = { files: [], recovered: [], rejected: [], total: 0, seen: new Map
 const DIM_MAP = {
   'od': 'od', 'loc': 'loc', 'shk': 'shk', 'oal': 'oal',
   'd1': 'od', 'l1': 'loc', 'd2': 'shk', 'l2': 'oal',
+  'lof': 'flute_length', 'l3': 'flute_length',
+  'shk-l': 'shank_length', 'shk l': 'shank_length', 'l4': 'shank_length',
   'radius': 'corner_radius', 'corner radius': 'corner_radius',
   'small od': 'small_od', 'small diameter': 'small_od',
   'reach': 'reach', 'neck': 'neck',
@@ -35,8 +37,10 @@ const DIM_MAP = {
   'upcut': 'upcut_length', 'mortise': 'mortise_length',
 };
 function classify(header) {
-  const h = header.trim().toLowerCase();
+  const raw = header.trim().toLowerCase();
+  const h = raw.replace(/\s*\([^)]*\)/g, '').trim();             // drop "(D1)"/"(L3)" code suffixes
   if (h in DIM_MAP) return { kind: 'dim', key: DIM_MAP[h] };
+  if (raw in DIM_MAP) return { kind: 'dim', key: DIM_MAP[raw] };
   if (h === 'degree') return { kind: 'taper' };
   if (h === 'flutes') return { kind: 'flutes' };
   if (h === 'lh' || h === 'left hand') return { kind: 'lh' };
@@ -62,6 +66,7 @@ function buildName(specs, flutes, d, coating) {
   if (specs.taper_angle) n += `, ${specs.taper_angle}° Taper`;
   if (specs.helix_angle) n += `, ${specs.helix_angle}° Helix`;
   if (specs.point_angle) n += `, ${specs.point_angle}° Point`;
+  if (specs.coolant) n += `, ${specs.coolant}`;
   if (specs.reach_display) n += `, ${specs.reach_display} Reach`;
   if (specs.neck_length_display) n += ', Necked';
   if (specs.flat) n += ` (${specs.flat})`;
@@ -82,6 +87,7 @@ function emit(bucket, d, partNumber, flutes, coating, extra, baseSpecs) {
   if (extra?.flat) specs.flat = extra.flat;
   if (extra?.application) specs.application = extra.application;
   if (extra?.pointAngle != null) specs.point_angle = extra.pointAngle;
+  if (extra?.coolant) specs.coolant = extra.coolant;
   const name = buildName(specs, flutes, d, coating);
   bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes, coating, specs });
 }
@@ -126,16 +132,19 @@ function processFile(d, headers, rows, bucket) {
       let coating = 'Uncoated', headerFlutes = null, flat = null, application = null;
       const angleM = String(header).match(/(\d{2,3})\s*°/);              // "90°", "142° PowerA"
       const pointAngle = angleM ? parseFloat(angleM[1]) : null;
+      // coolant-through facet (Hurricane drills): header carries "Coolant Through" / "Non-Coolant Through"
+      const coolant = /non-?\s*coolant/i.test(header) ? 'Non-Coolant Through'
+        : /coolant\s*through/i.test(header) ? 'Coolant Through' : null;
       if (hasVariantSignals(header)) {
         const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; flat = p.flat;
-      } else if (pointAngle != null) {
-        coating = d.fixedCoating ?? 'Uncoated';                          // angle-only header — the variant is the point, not an application
+      } else if (pointAngle != null || coolant) {
+        coating = d.fixedCoating ?? 'Uncoated';                          // angle/coolant-only header — the variant is the point/coolant, not an application
       } else {
         coating = d.fixedCoating ?? 'Uncoated';
         application = applicationFrom(header ?? '') ?? d.fixedApplication ?? null;
       }
       const flutes = explicitFlutes ?? headerFlutes ?? d.fixedFlutes ?? null;
-      emit(bucket, d, cell, flutes, coating, { flat, application, pointAngle }, specs);
+      emit(bucket, d, cell, flutes, coating, { flat, application, pointAngle, coolant }, specs);
     }
   }
 }

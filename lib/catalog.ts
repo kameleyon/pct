@@ -354,6 +354,10 @@ const CATEGORY_IMAGE: Record<string, string> = {
   'dr-nc-spotting-drills': '/slots/NC-Spotting-Drill.jpg',
   'dr-drill-countersink': '/slots/CenterDrill.jpg',
   'dr-medium-length-drills': '/slots/JobberDrills.jpg',
+  // Hurricane Drills
+  'dr-hurricane-3xd': '/slots/Hurricane3xd.jpg',
+  'dr-hurricane-5xd': '/slots/Hurricane5xd.jpg',
+  'dr-hurricane-8xd': '/slots/Hurricane8xd.jpg',
 };
 
 export const categoryImage = (slug: string): string =>

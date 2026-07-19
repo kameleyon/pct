@@ -66,6 +66,10 @@ export const GEOMETRY = {
   'dr-nc-spotting-drills': 'NC Spotting Drill',
   'dr-drill-countersink': 'Drill & Countersink',
   'dr-medium-length-drills': 'Medium Length Drill',
+  // ---- Hurricane Drills (HP, 2-flute, 140° point, 30° helix) ----
+  'dr-hurricane-3xd': 'Hurricane 3xD Drill',
+  'dr-hurricane-5xd': 'Hurricane 5xD Drill',
+  'dr-hurricane-8xd': 'Hurricane 8xD Drill',
 };
 
 const V = 'hp-v4-end-mills', V5 = 'hp-v5-end-mills', HY5 = 'hp-hy5-end-mills', F45 = 'hp-f45-end-mills',
@@ -218,6 +222,11 @@ export const DESCRIPTORS = [
   { file: 'FRT Drill and Countersink.csv', category: 'dr-drill-countersink', system: 'Imperial' },
   { file: 'MET Drill and Countersink.csv', category: 'dr-drill-countersink', system: 'Metric' },
   { file: 'MET Medium Length Drill.csv', category: 'dr-medium-length-drills', system: 'Metric', fixedFlutes: 2 },
+
+  // ==== HURRICANE DRILLS (HP; 2FL, 140° point, 30° helix; coolant-through facet in header) ====
+  { file: 'Hurricane 3xD.csv', category: 'dr-hurricane-3xd', system: 'Imperial', fixedFlutes: 2, fixedPointAngle: 140, fixedHelix: 30 },
+  { file: 'Hurricane 5xD.csv', category: 'dr-hurricane-5xd', system: 'Imperial', fixedFlutes: 2, fixedPointAngle: 140, fixedHelix: 30 },
+  { file: 'Hurricane 8xD.csv', category: 'dr-hurricane-8xd', system: 'Imperial', fixedFlutes: 2, fixedPointAngle: 140, fixedHelix: 30 },
 ];
 
 // Exact-duplicate "(1)" exports intentionally skipped.
