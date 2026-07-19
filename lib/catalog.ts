@@ -33,6 +33,21 @@ export type Category = {
 const PRODUCT_COLS =
   'id,part_number,slug,name,category_id,measurement_system,flutes,coating,material,specs,price,sale_price,stock_quantity,primary_image_url';
 
+// Count products in a category and all its descendants (hub → sub-category → line).
+// Our taxonomy is at most 3 levels, so a few BFS hops cover the whole subtree.
+async function countSubtreeProducts(sb: ReturnType<typeof getSupabase>, rootId: string): Promise<number> {
+  const ids: string[] = [rootId];
+  let frontier: string[] = [rootId];
+  for (let depth = 0; depth < 3 && frontier.length; depth++) {
+    const { data } = await sb.from('categories').select('id').in('parent_id', frontier);
+    const next = (data ?? []).map((k: any) => k.id as string);
+    ids.push(...next);
+    frontier = next;
+  }
+  const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).in('category_id', ids);
+  return count ?? 0;
+}
+
 /** Leaf categories (children of "end-mills"), each with a live product count. */
 export async function getCategories(): Promise<Category[]> {
   const sb = getSupabase();
@@ -68,16 +83,7 @@ export async function getTopCategories(): Promise<Category[]> {
       .order('sort_order');
     if (!cats) return [];
     return await Promise.all(
-      cats.map(async (c) => {
-        const { data: kids } = await sb.from('categories').select('id').eq('parent_id', c.id);
-        const ids = (kids ?? []).map((k: any) => k.id);
-        let count = 0;
-        if (ids.length) {
-          const r = await sb.from('products').select('*', { count: 'exact', head: true }).in('category_id', ids);
-          count = r.count ?? 0;
-        }
-        return { ...c, count } as Category;
-      })
+      cats.map(async (c) => ({ ...c, count: await countSubtreeProducts(sb, c.id) } as Category))
     );
   } catch {
     return [];
@@ -95,10 +101,7 @@ export async function getChildCategories(parentId: string): Promise<Category[]> 
       .order('sort_order');
     if (!cats) return [];
     return await Promise.all(
-      cats.map(async (c) => {
-        const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).eq('category_id', c.id);
-        return { ...c, count: count ?? 0 } as Category;
-      })
+      cats.map(async (c) => ({ ...c, count: await countSubtreeProducts(sb, c.id) } as Category))
     );
   } catch {
     return [];
