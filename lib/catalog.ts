@@ -160,16 +160,33 @@ export async function getCategoryById(id: string): Promise<Category | null> {
 }
 
 /** A spread of representative products for the homepage. */
+// Curated spread of distinct tool types, so the "Customer favorites" row shows
+// variety (different geometries/photos) instead of one series in four sizes.
+const FEATURED_SLUGS = [
+  'square-end-mills', 'ball-end-mills', 'r-upcut-spiral', 'dr-jobber-drills',
+  'corner-radius-end-mills', 'hp-axmill-end-mills', 'rm-45-reamers', 'double-end-square-end-mills',
+];
+
 export async function getFeatured(limit = 8): Promise<Product[]> {
   const sb = getSupabase();
   try {
-    const { data } = await sb
-      .from('products')
-      .select(PRODUCT_COLS)
-      .eq('coating', 'PowerA')
-      .order('part_number')
-      .limit(limit);
-    return (data as Product[]) ?? [];
+    const { data: cats } = await sb.from('categories').select('id,slug').in('slug', FEATURED_SLUGS);
+    const idBySlug = new Map((cats ?? []).map((c: any) => [c.slug, c.id]));
+    const picks: Product[] = [];
+    for (const slug of FEATURED_SLUGS) {
+      if (picks.length >= limit) break;
+      const cid = idBySlug.get(slug);
+      if (!cid) continue;
+      // one representative per category — skip past the tiniest first rows when possible
+      const { data } = await sb
+        .from('products')
+        .select(PRODUCT_COLS)
+        .eq('category_id', cid)
+        .order('part_number')
+        .limit(6);
+      if (data && data.length) picks.push(data[Math.min(3, data.length - 1)] as Product);
+    }
+    return picks;
   } catch {
     return [];
   }
