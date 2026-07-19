@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCategoryBySlug, getChildCategories, getCategoryFacets, getProducts } from '@/lib/catalog';
+import { getCategoryBySlug, getCategoryById, getChildCategories, getCategoryFacets, getProducts } from '@/lib/catalog';
 import { ProductCard } from '@/components/ProductCard';
 import { CategoryCard } from '@/components/CategoryCard';
 import { FilterRail, SortSelect } from '@/components/browse';
@@ -39,6 +39,7 @@ export default async function CategoryPage({
   }
 
   // Leaf category → product listing with filters.
+  const parent = category.parent_id ? await getCategoryById(category.parent_id) : null;
   const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
   const [facets, { items, total }] = await Promise.all([
     getCategoryFacets(category.id),
@@ -65,7 +66,13 @@ export default async function CategoryPage({
   return (
     <main className="wrap" style={{ paddingTop: 20, paddingBottom: 72 }}>
       <div style={{ fontSize: 12.5, color: 'var(--muted-2)', fontWeight: 600, marginBottom: 16 }}>
-        <Link href="/">Home</Link> <span style={{ color: '#c9c4ba' }}>/</span> <span style={{ color: 'var(--text)' }}>{category.name}</span>
+        <Link href="/">Home</Link> <span style={{ color: '#c9c4ba' }}>/</span>{' '}
+        {parent && (
+          <>
+            <Link href={`/category/${parent.slug}`}>{parent.name}</Link> <span style={{ color: '#c9c4ba' }}>/</span>{' '}
+          </>
+        )}
+        <span style={{ color: 'var(--text)' }}>{category.name}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBottom: 24 }}>
         <div>
