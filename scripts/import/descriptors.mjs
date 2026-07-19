@@ -70,6 +70,24 @@ export const GEOMETRY = {
   'dr-hurricane-3xd': 'Hurricane 3xD Drill',
   'dr-hurricane-5xd': 'Hurricane 5xD Drill',
   'dr-hurricane-8xd': 'Hurricane 8xD Drill',
+  // ---- Carbide Burs (ANSI shapes SA–SN) ----
+  'b-sa': 'Cylinder Bur',
+  'b-sb': 'Cylinder End-Cut Bur',
+  'b-sc': 'Cylinder Ball-Nose Bur',
+  'b-sd': 'Ball Bur',
+  'b-se': 'Oval Bur',
+  'b-sf': 'Tree Radius-End Bur',
+  'b-sg': 'Tree Pointed-End Bur',
+  'b-sh': 'Flame Bur',
+  'b-sj': '60° Cone Bur',
+  'b-sk': '90° Cone Bur',
+  'b-sl': 'Taper Radius-End Bur',
+  'b-sm': 'Cone Pointed Bur',
+  'b-sn': 'Inverted Cone Bur',
+  'b-tire-burs': 'Tire Bur',
+  'b-diemills': 'Diemill',
+  'b-piloted-diemills': 'Piloted Diemill',
+  'b-fiberglass-routers': 'Fiberglass Router',
 };
 
 const V = 'hp-v4-end-mills', V5 = 'hp-v5-end-mills', HY5 = 'hp-hy5-end-mills', F45 = 'hp-f45-end-mills',
@@ -227,6 +245,28 @@ export const DESCRIPTORS = [
   { file: 'Hurricane 3xD.csv', category: 'dr-hurricane-3xd', system: 'Imperial', fixedFlutes: 2, fixedPointAngle: 140, fixedHelix: 30 },
   { file: 'Hurricane 5xD.csv', category: 'dr-hurricane-5xd', system: 'Imperial', fixedFlutes: 2, fixedPointAngle: 140, fixedHelix: 30 },
   { file: 'Hurricane 8xD.csv', category: 'dr-hurricane-8xd', system: 'Imperial', fixedFlutes: 2, fixedPointAngle: 140, fixedHelix: 30 },
+
+  // ==== CARBIDE BURS — shapes SA–SN (cut style in header: Single/Double/Aluma/Diamond/Chipbreaker) ====
+  { file: 'FRT SA Burs.csv', category: 'b-sa', system: 'Imperial' }, { file: 'MET SA Bur.csv', category: 'b-sa', system: 'Metric' },
+  { file: 'FRT SB Burs.csv', category: 'b-sb', system: 'Imperial' }, { file: 'MET SB Bur.csv', category: 'b-sb', system: 'Metric' },
+  { file: 'FRT SC Burs.csv', category: 'b-sc', system: 'Imperial' }, { file: 'MET SC Bur.csv', category: 'b-sc', system: 'Metric' },
+  { file: 'FRT SD Burs.csv', category: 'b-sd', system: 'Imperial' }, { file: 'MET SD Bur.csv', category: 'b-sd', system: 'Metric' },
+  { file: 'FRT SE Burs.csv', category: 'b-se', system: 'Imperial' }, { file: 'MET SE Bur.csv', category: 'b-se', system: 'Metric' },
+  { file: 'FRT SF Burs.csv', category: 'b-sf', system: 'Imperial' }, { file: 'MET SF Bur.csv', category: 'b-sf', system: 'Metric' },
+  { file: 'FRT SG Burs.csv', category: 'b-sg', system: 'Imperial' }, { file: 'MET SG Bur.csv', category: 'b-sg', system: 'Metric' },
+  { file: 'FRT SH Burs.csv', category: 'b-sh', system: 'Imperial' }, { file: 'MET SH Bur.csv', category: 'b-sh', system: 'Metric' },
+  { file: 'FRT SJ Burs.csv', category: 'b-sj', system: 'Imperial' }, { file: 'MET SJ Bur.csv', category: 'b-sj', system: 'Metric' },
+  { file: 'FRT SK Burs.csv', category: 'b-sk', system: 'Imperial' }, { file: 'MET SK Bur.csv', category: 'b-sk', system: 'Metric' },
+  { file: 'FRT SL Burs.csv', category: 'b-sl', system: 'Imperial' }, { file: 'MET SL Burs.csv', category: 'b-sl', system: 'Metric' },
+  { file: 'FRT SM Burs.csv', category: 'b-sm', system: 'Imperial' }, { file: 'MET SM Burs.csv', category: 'b-sm', system: 'Metric' },
+  { file: 'FRT SN Burs.csv', category: 'b-sn', system: 'Imperial' }, { file: 'MET SN Burs.csv', category: 'b-sn', system: 'Metric' },
+
+  // ==== TIRE BURS / DIEMILLS / FIBERGLASS ROUTERS ====
+  { file: 'FRT Tire Burs.csv', category: 'b-tire-burs', system: 'Imperial' }, { file: 'MET Tire Burs.csv', category: 'b-tire-burs', system: 'Metric' },
+  { file: 'FRT Diemills.csv', category: 'b-diemills', system: 'Imperial' },
+  { file: 'FRT Piloted Diemills.csv', category: 'b-piloted-diemills', system: 'Imperial' },
+  { file: 'FRT Fiberglass Routers.csv', category: 'b-fiberglass-routers', system: 'Imperial', fixedFlutes: 1 },
+  { file: 'MET Fiberglass Routers.csv', category: 'b-fiberglass-routers', system: 'Metric', fixedFlutes: 1 },
 ];
 
 // Exact-duplicate "(1)" exports intentionally skipped.
@@ -234,4 +274,5 @@ export const SKIPPED = [
   'FR Mold Mill CR Necked (1).csv', 'FRT Corner Radius Mold Mills Long (1).csv',
   'FRT Corner Radius Necked Axmills (1).csv', 'MET Medium Pitch Roughers (1).csv', 'MET SQ Chipbreaker Axmills (1).csv',
   'FRT 45 Degree Reamer (1).csv', 'FRT NC Spotting Drills (1).csv',
+  'FRT SA Burs (1).csv', 'FRT SB Burs (1).csv', 'FRT Fiberglass Routers (1).csv',
 ];

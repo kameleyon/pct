@@ -29,6 +29,7 @@ const DIM_MAP = {
   'd1': 'od', 'l1': 'loc', 'd2': 'shk', 'l2': 'oal',
   'lof': 'flute_length', 'l3': 'flute_length',
   'shk-l': 'shank_length', 'shk l': 'shank_length', 'l4': 'shank_length',
+  'pilot': 'pilot',
   'radius': 'corner_radius', 'corner radius': 'corner_radius',
   'small od': 'small_od', 'small diameter': 'small_od',
   'reach': 'reach', 'neck': 'neck',
@@ -41,7 +42,7 @@ function classify(header) {
   const h = raw.replace(/\s*\([^)]*\)/g, '').trim();             // drop "(D1)"/"(L3)" code suffixes
   if (h in DIM_MAP) return { kind: 'dim', key: DIM_MAP[h] };
   if (raw in DIM_MAP) return { kind: 'dim', key: DIM_MAP[raw] };
-  if (h === 'degree') return { kind: 'taper' };
+  if (/^(deg(ree)?|angle|taper\s*angle)\s*°?$/.test(h)) return { kind: 'taper' };  // "Degree","DEG","DEG °","Angle"
   if (h === 'flutes') return { kind: 'flutes' };
   if (h === 'lh' || h === 'left hand') return { kind: 'lh' };
   if (/wire|letter/.test(h)) return { kind: 'wire' };            // drill gauge size (e.g. "#56", "70")
@@ -52,6 +53,24 @@ function classify(header) {
 const isPartId = (h) => /par\s*t?\s*id/i.test(h);
 // coating/flute/flat words present → header encodes variant, not application
 const hasVariantSignals = (h) => /flute|power|flat|uncoated|uncloated/i.test(h);
+// bur / fiberglass cut-&-style variant carried in the part-column header
+function cutFrom(header) {
+  const h = String(header).toLowerCase();
+  if (/coarse/.test(h)) return 'Coarse Double Cut';
+  if (/single\s*cut|singlecut/.test(h)) return 'Single Cut';
+  if (/double\s*cut|doublecut/.test(h)) return 'Double Cut';
+  if (/aluma\s*cut|alumacut/.test(h)) return 'Aluma Cut';
+  if (/diamond\s*cut|diamondcut/.test(h)) return 'Diamond Cut';
+  if (/chip\s*breaker|chipbreaker/.test(h)) return 'Chipbreaker';
+  if (/round\s*shank/.test(h)) return 'Round Shank';
+  if (/tri-?\s*shank/.test(h)) return 'Tri-Shank';
+  if (/burend|bur\s*end/.test(h)) return 'Bur End';
+  if (/millend|mill\s*end/.test(h)) return 'Mill End';
+  if (/drillend|drill\s*end/.test(h)) return 'Drill End';
+  if (/plain/.test(h)) return 'Plain End';
+  return null;
+}
+
 // application = part-column header minus the Part-ID words (e.g. "Part ID - General Wood" → "General Wood")
 function applicationFrom(header) {
   const s = header.replace(/par\s*t?\s*id/ig, ' ').replace(/[-–—:]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -72,6 +91,7 @@ function buildName(specs, flutes, d, coating) {
   if (specs.flat) n += ` (${specs.flat})`;
   if (specs.rotation) n += ' (Left Hand)';
   if (coating && coating !== 'Uncoated') n += ` — ${coating}`;
+  if (specs.cut) n += ` — ${specs.cut}`;
   if (specs.application) n += ` — ${specs.application}`;
   return n;
 }
@@ -88,6 +108,7 @@ function emit(bucket, d, partNumber, flutes, coating, extra, baseSpecs) {
   if (extra?.application) specs.application = extra.application;
   if (extra?.pointAngle != null) specs.point_angle = extra.pointAngle;
   if (extra?.coolant) specs.coolant = extra.coolant;
+  if (extra?.cut) specs.cut = extra.cut;
   const name = buildName(specs, flutes, d, coating);
   bucket.push({ part: partNumber, slug: partNumber, name, system: d.system, flutes, coating, specs });
 }
@@ -135,16 +156,17 @@ function processFile(d, headers, rows, bucket) {
       // coolant-through facet (Hurricane drills): header carries "Coolant Through" / "Non-Coolant Through"
       const coolant = /non-?\s*coolant/i.test(header) ? 'Non-Coolant Through'
         : /coolant\s*through/i.test(header) ? 'Coolant Through' : null;
+      const cut = cutFrom(header);                                       // bur/fiberglass cut & style
       if (hasVariantSignals(header)) {
         const p = parseHeader(header, null); coating = p.coating; headerFlutes = p.flutes; flat = p.flat;
-      } else if (pointAngle != null || coolant) {
-        coating = d.fixedCoating ?? 'Uncoated';                          // angle/coolant-only header — the variant is the point/coolant, not an application
+      } else if (pointAngle != null || coolant || cut) {
+        coating = d.fixedCoating ?? 'Uncoated';                          // angle/coolant/cut header — the variant is not an application
       } else {
         coating = d.fixedCoating ?? 'Uncoated';
         application = applicationFrom(header ?? '') ?? d.fixedApplication ?? null;
       }
       const flutes = explicitFlutes ?? headerFlutes ?? d.fixedFlutes ?? null;
-      emit(bucket, d, cell, flutes, coating, { flat, application, pointAngle, coolant }, specs);
+      emit(bucket, d, cell, flutes, coating, { flat, application, pointAngle, coolant, cut }, specs);
     }
   }
 }

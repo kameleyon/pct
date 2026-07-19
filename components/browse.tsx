@@ -31,7 +31,7 @@ export function FilterRail({ facets }: { facets: Facets }) {
   const pathname = usePathname();
   const params = useSearchParams();
   const toggle = useToggle();
-  const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'flat', 'app', 'system'];
+  const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
 
   const Chips = ({ title, param, values }: { title: string; param: string; values: string[] }) =>
@@ -69,6 +69,7 @@ export function FilterRail({ facets }: { facets: Facets }) {
       </div>
       <Chips title="Flutes" param="flutes" values={facets.flutes.map(String)} />
       <Chips title="Geometry" param="geometry" values={facets.geometries} />
+      <Checks title="Cut" param="cut" values={facets.cuts} />
       <Checks title="Coating" param="coating" values={facets.coatings} />
       <Chips title="Shank" param="flat" values={facets.flats} />
       <Checks title="Application" param="app" values={facets.applications} />

@@ -200,6 +200,7 @@ export type ProductQuery = {
   geometries?: string[];
   flats?: string[];
   applications?: string[];
+  cuts?: string[];
   sort?: string;
   page?: number;
   pageSize?: number;
@@ -217,6 +218,7 @@ export async function getProducts(q: ProductQuery): Promise<{ items: Product[]; 
     if (q.geometries?.length) query = query.in('specs->>geometry', q.geometries);
     if (q.flats?.length) query = query.in('specs->>flat', q.flats);
     if (q.applications?.length) query = query.in('specs->>application', q.applications);
+    if (q.cuts?.length) query = query.in('specs->>cut', q.cuts);
 
     switch (q.sort) {
       case 'dia-asc':
@@ -245,12 +247,13 @@ export type Facets = {
   geometries: string[];
   flats: string[];
   applications: string[];
+  cuts: string[];
 };
 
 /** Distinct facet values actually present in a category, for the filter rail. */
 export async function getCategoryFacets(categoryId: string): Promise<Facets> {
   const sb = getSupabase();
-  const empty: Facets = { flutes: [], coatings: [], systems: [], geometries: [], flats: [], applications: [] };
+  const empty: Facets = { flutes: [], coatings: [], systems: [], geometries: [], flats: [], applications: [], cuts: [] };
   try {
     const { data } = await sb
       .from('products')
@@ -258,7 +261,7 @@ export async function getCategoryFacets(categoryId: string): Promise<Facets> {
       .eq('category_id', categoryId)
       .limit(5000);
     const flutes = new Set<number>(), coatings = new Set<string>(), systems = new Set<string>();
-    const geometries = new Set<string>(), flats = new Set<string>(), applications = new Set<string>();
+    const geometries = new Set<string>(), flats = new Set<string>(), applications = new Set<string>(), cuts = new Set<string>();
     (data ?? []).forEach((r: any) => {
       if (r.flutes != null) flutes.add(r.flutes);
       if (r.coating) coatings.add(r.coating);
@@ -266,6 +269,7 @@ export async function getCategoryFacets(categoryId: string): Promise<Facets> {
       if (r.specs?.geometry) geometries.add(r.specs.geometry);
       if (r.specs?.flat) flats.add(r.specs.flat);
       if (r.specs?.application) applications.add(r.specs.application);
+      if (r.specs?.cut) cuts.add(r.specs.cut);
     });
     return {
       flutes: [...flutes].sort((a, b) => a - b),
@@ -274,6 +278,7 @@ export async function getCategoryFacets(categoryId: string): Promise<Facets> {
       geometries: [...geometries].sort(),
       flats: [...flats].sort(),
       applications: [...applications].sort(),
+      cuts: [...cuts].sort(),
     };
   } catch {
     return empty;
@@ -378,6 +383,24 @@ const CATEGORY_IMAGE: Record<string, string> = {
   'dr-hurricane-3xd': '/slots/Hurricane3xd.jpg',
   'dr-hurricane-5xd': '/slots/Hurricane5xd.jpg',
   'dr-hurricane-8xd': '/slots/Hurricane8xd.jpg',
+  // Carbide Burs (shapes SA–SN)
+  'b-sa': '/slots/SA-DC-Bur.jpg',
+  'b-sb': '/slots/SB-DC-Bur.jpg',
+  'b-sc': '/slots/SC-DC-Bur.jpg',
+  'b-sd': '/slots/SD-DC-Bur2.jpg',
+  'b-se': '/slots/SE-DC-Bur.jpg',
+  'b-sf': '/slots/SF-DC-Bur.jpg',
+  'b-sg': '/slots/SG-DC-Bur.jpg',
+  'b-sh': '/slots/SH-DC-Bur.jpg',
+  'b-sj': '/slots/SJ-SC-Bur.jpg',
+  'b-sk': '/slots/SK-DC-Bur.jpg',
+  'b-sl': '/slots/SL-DC-Bur.jpg',
+  'b-sm': '/slots/SM-DC-Bur.jpg',
+  'b-sn': '/slots/SN-DC-Bur.jpg',
+  'b-tire-burs': '/slots/TireBur-TriShank.jpg',
+  'b-diemills': '/slots/SB-DC-Bur.jpg',
+  'b-piloted-diemills': '/slots/SC-DC-Bur.jpg',
+  'b-fiberglass-routers': '/slots/Fiberglass-Router-MillEnd.jpg',
 };
 
 export const categoryImage = (slug: string): string =>

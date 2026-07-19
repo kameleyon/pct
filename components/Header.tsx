@@ -11,7 +11,7 @@ const NAV: [string, string][] = [
   ['High Performance Routers', '/category/high-performance-routers'],
   ['Drills', '/category/drills'],
   ['Reamers & Threadmills', '/category/reamers'],
-  ['Burs & Fiberglass Routing', '#'],
+  ['Burs & Fiberglass Routing', '/category/burs'],
   ['Dental Tools', '#'],
 ];
 
