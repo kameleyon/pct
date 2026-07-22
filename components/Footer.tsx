@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <div className="wrap" style={{ paddingBottom: 32 }}>
-      <footer className="pct-foot" style={{ background: 'var(--color-accent-800)', color: 'rgba(255,255,255,.72)', borderRadius: 28, overflow: 'hidden' }}>
+    <footer className="pct-foot" style={{ background: 'var(--color-accent-800)', color: 'rgba(255,255,255,.72)', marginTop: 40 }}>
+      <div className="wrap">
         <div className="foot-grid">
           <div>
             <div style={{ fontWeight: 600, fontSize: 20, color: '#fff', letterSpacing: '.01em' }}>Precision CNC Tools</div>
@@ -46,7 +46,7 @@ export function Footer() {
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </div>
+    </footer>
   );
 }

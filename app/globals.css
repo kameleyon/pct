@@ -58,8 +58,8 @@ html,body{overflow-x:hidden;max-width:100%}
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;grid-auto-rows:1fr}
 .vip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding:52px 44px 0}
-.foot-bottom{padding:20px 44px}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding:52px 0 0}
+.foot-bottom{padding:20px 0}
 .pad-lg{padding:40px}
 .pad-band{padding:44px}
 .section-pad{padding:56px 0 8px}
@@ -103,8 +103,8 @@ html,body{overflow-x:hidden;max-width:100%}
 @media (max-width:680px){
   .wrap{padding:0 16px}
   .cat-grid{grid-template-columns:repeat(2,1fr)}
-  .foot-grid{grid-template-columns:1fr;padding:36px 20px 0}
-  .foot-bottom{padding:18px 20px}
+  .foot-grid{grid-template-columns:1fr;padding:36px 0 0}
+  .foot-bottom{padding:18px 0}
   .util-hide{display:none!important}
   .section-pad{padding:36px 0 8px}
   .hero-stats>*{padding:0 8px}
