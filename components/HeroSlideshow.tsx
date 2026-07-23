@@ -84,20 +84,47 @@ export function HeroSlideshow() {
     <div
       style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(135deg, #0c2c19 0%, #103b21 48%, #154a2a 100%)',
+        background: 'linear-gradient(135deg, #123f28 0%, #0c2c19 26%, #175a34 52%, #081c10 78%, #030d07 100%)',
       }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* faint blueprint texture, matches the brand's engineered feel */}
+      {/* raking diagonal light sweep for depth */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(115deg, transparent 32%, rgba(255,255,255,.05) 46%, rgba(212,175,55,.09) 51%, transparent 66%)',
+      }} />
+
+      {/* vignette for contrast toward the edges */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(120% 100% at 20% 12%, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 45%, rgba(0,0,0,.38) 100%)',
+      }} />
+
+      {/* fine diagonal brushed-metal texture */}
       <div style={{
         position: 'absolute', inset: 0, opacity: 0.5,
         backgroundImage: 'repeating-linear-gradient(135deg, rgba(212,175,55,.05) 0px, rgba(212,175,55,.05) 1px, transparent 1px, transparent 26px)',
       }} />
 
-      {/* corner accents echoing the brand's gold/green palette */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 160, height: 160, background: 'linear-gradient(135deg, rgba(212,175,55,.5), transparent 70%)', clipPath: 'polygon(0 0, 100% 0, 0 100%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, right: 0, width: 200, height: 200, background: 'linear-gradient(-45deg, rgba(212,175,55,.35), transparent 70%)', clipPath: 'polygon(100% 100%, 100% 0, 0 100%)' }} />
+      {/* halftone dot texture, confined to the product side, fading at the edges */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'radial-gradient(rgba(255,255,255,.16) 1px, transparent 1.3px)',
+        backgroundSize: '13px 13px',
+        maskImage: 'radial-gradient(60% 55% at 78% 55%, black 30%, transparent 75%)',
+        WebkitMaskImage: 'radial-gradient(60% 55% at 78% 55%, black 30%, transparent 75%)',
+      }} />
+
+      {/* thin gold diagonal corner lines, top-left and bottom-right */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: 190, height: 190,
+        background: 'linear-gradient(-45deg, transparent calc(50% - 1.5px), rgba(212,175,55,.85) calc(50% - 1.5px), rgba(212,175,55,.85) calc(50% + 1.5px), transparent calc(50% + 1.5px))',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: 0, right: 0, width: 170, height: 170,
+        background: 'linear-gradient(-45deg, transparent calc(50% - 1.5px), rgba(212,175,55,.85) calc(50% - 1.5px), rgba(212,175,55,.85) calc(50% + 1.5px), transparent calc(50% + 1.5px)), linear-gradient(-45deg, transparent calc(50% - 11px), rgba(212,175,55,.4) calc(50% - 11px), rgba(212,175,55,.4) calc(50% - 9px), transparent calc(50% - 9px))',
+      }} />
 
       {SLIDES.map((slide, idx) => (
         <div
