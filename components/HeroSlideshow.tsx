@@ -68,6 +68,27 @@ const SLIDES: Slide[] = [
     bullets: ['Compression & spiral geometries', 'Chipbreaker options', 'Clean edge finish'],
     badges: [{ Icon: Target, text: 'Reduced chatter' }, { Icon: Bolt, text: 'Clean finish' }, { Icon: Shield, text: 'Engineered to perform' }],
   },
+  {
+    src: '/slots/axmills-endmill-crop.png',
+    headline: 'AxMills',
+    sub: 'Built for aluminum and non-ferrous materials.',
+    bullets: ['2 & 3 flute, square & ball profiles', 'Uncoated & PowerZ coated', 'Metric sizes available'],
+    badges: [{ Icon: Target, text: 'Unique high-feed geometry' }, { Icon: Bolt, text: 'Lower axial load' }, { Icon: Shield, text: 'Reduced chatter' }],
+  },
+  {
+    src: '/slots/High-Performance-End-Mills.png',
+    headline: 'Performance Coatings',
+    sub: 'Advanced coating technology for maximum tool performance.',
+    bullets: ['PowerT (TiN), PowerC (TiCN), PowerA (AlTiN)', 'PowerZ (ZrN), PowerN (nACo), PowerNR (nACRo)', 'PowerDLC & PowerRD (diamond-like & real diamond)'],
+    badges: [{ Icon: Shield, text: 'Longer tool life' }, { Icon: Bolt, text: 'Higher productivity' }, { Icon: Target, text: 'Consistent finishes' }],
+  },
+  {
+    src: '/slots/dental-bur-set-cutout.png',
+    headline: 'Dental Tool Solutions',
+    sub: 'Precision CAD/CAM, hand piece & ISO bur solutions.',
+    bullets: ['Wide range of carbide bur shapes', 'Fine to coarse cut options', 'Multiple coating options available'],
+    badges: [{ Icon: Target, text: 'Precision manufacturing' }, { Icon: Shield, text: 'Reliable performance' }, { Icon: Bolt, text: 'Multiple coatings' }],
+  },
 ];
 
 export function HeroSlideshow() {
