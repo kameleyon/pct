@@ -2,17 +2,17 @@
 import { useState, useEffect } from 'react';
 
 const SLIDES = [
-  { src: '/img/hero-banners/01-dental-tool-solutions.jpg', label: 'Dental Tool Solutions' },
-  { src: '/img/hero-banners/02-cadcam-bur-coatings.jpg', label: 'CAD/CAM Bur Coatings' },
-  { src: '/img/hero-banners/03-hand-piece-lathe.jpg', label: 'Hand Piece & Lathe' },
-  { src: '/img/hero-banners/04-iso-burs.jpg', label: 'ISO Burs' },
-  { src: '/img/hero-banners/05-axmills.jpg', label: 'AxMills' },
-  { src: '/img/hero-banners/06-performance-coatings.jpg', label: 'Performance Coatings' },
-  { src: '/img/hero-banners/07-mini-mills.jpg', label: 'Mini Mills' },
-  { src: '/img/hero-banners/08-high-performance-endmills.jpg', label: 'High Performance Endmills' },
-  { src: '/img/hero-banners/09-standard-endmills.jpg', label: 'Standard Endmills' },
-  { src: '/img/hero-banners/10-precision-carbide-drills.jpg', label: 'Precision Carbide Drills' },
-  { src: '/img/hero-banners/11-pro-plus-performance.jpg', label: 'Pro+ Performance' },
+  { src: '/img/hero_banners/01-dental-tool-solutions.png', label: 'Dental Tool Solutions' },
+  { src: '/img/hero_banners/02-cadcam-bur-coatings.png', label: 'CAD/CAM Bur Coatings' },
+  { src: '/img/hero_banners/03-hand-piece-lathe.png', label: 'Hand Piece & Lathe' },
+  { src: '/img/hero_banners/04-iso-burs.png', label: 'ISO Burs' },
+  { src: '/img/hero_banners/05-axmills.png', label: 'AxMills' },
+  { src: '/img/hero_banners/06-performance-coatings.png', label: 'Performance Coatings' },
+  { src: '/img/hero_banners/07-mini-mills.png', label: 'Mini Mills' },
+  { src: '/img/hero_banners/08-high-performance-endmills.png', label: 'High Performance Endmills' },
+  { src: '/img/hero_banners/09-standard-endmills.png', label: 'Standard Endmills' },
+  { src: '/img/hero_banners/10-precision-carbide-drills.png', label: 'Precision Carbide Drills' },
+  { src: '/img/hero_banners/11-pro-plus-performance.png', label: 'Pro+ Performance' },
 ];
 
 export function HeroSlideshow() {
