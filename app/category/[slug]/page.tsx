@@ -93,15 +93,14 @@ export default async function CategoryPage({
         </div>
       </div>
 
-      {children.length > 0 && (
-        <div className="cat-grid" style={{ marginBottom: 32 }}>
-          {children.map((c) => <CategoryCard key={c.slug} c={c} />)}
-        </div>
-      )}
-
       <div className="browse-layout">
         <FilterRail facets={facets} catNav={catNav} />
         <div>
+          {children.length > 0 && (
+            <div className="cat-grid" style={{ marginBottom: 32 }}>
+              {children.map((c) => <CategoryCard key={c.slug} c={c} />)}
+            </div>
+          )}
           {items.length === 0 ? (
             <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 48, textAlign: 'center', color: 'var(--muted)' }}>No products match these filters.</div>
           ) : (
