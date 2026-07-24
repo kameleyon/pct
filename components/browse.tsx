@@ -34,6 +34,9 @@ const label = { fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTrans
 const sectionStyle: React.CSSProperties = { padding: '16px 0 4px', borderTop: '1px solid rgba(43,42,38,.07)' };
 const checkBox = (on: boolean) => ({ width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${on ? 'var(--green)' : 'rgba(43,42,38,.22)'}`, background: on ? 'var(--green)' : 'transparent', flex: 'none' as const, display: 'grid' as const, placeItems: 'center' as const });
 const Tick = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>;
+// single-select indicator (Category / Subcategory pick one, unlike the true multi-select facet checkboxes)
+const radio = (on: boolean): React.CSSProperties => ({ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${on ? 'var(--green)' : 'rgba(43,42,38,.22)'}`, background: 'transparent', flex: 'none', display: 'grid', placeItems: 'center' });
+const RadioDot = () => <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--green)' }} />;
 
 export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav }) {
   const router = useRouter();
@@ -41,8 +44,10 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
   const params = useSearchParams();
   const toggle = useToggle();
   const [term, setTerm] = useState('');
-  const [openTop, setOpenTop] = useState(catNav?.currentTop);
-  const activeTop = openTop ?? catNav?.currentTop;
+  // Always derive from the current page's props (not local state) so switching
+  // categories via any navigation path — sidebar, top nav, back button — keeps
+  // the subcategory list in sync instead of going stale.
+  const activeTop = catNav?.currentTop;
   const subs = catNav?.tops.find((t) => t.slug === activeTop)?.children ?? [];
   const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system', 'dia', 'shk', 'len', 'pt'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
@@ -97,7 +102,8 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
         {anyFilter && <span onClick={() => router.push(pathname)} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--muted-2)' }}>Clear all</span>}
       </div>
 
-      {/* site-wide category checkboxes — the current top is pre-checked; checking one reveals its subcategories */}
+      {/* site-wide category nav — single-select, so these navigate directly
+          (like Subcategory below) rather than behaving like filter checkboxes */}
       {catNav && catNav.tops.length > 0 && (
         <>
           <div style={sectionStyle}>
@@ -105,9 +111,9 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
             {catNav.tops.map((t) => {
               const on = t.slug === activeTop;
               return (
-                <label key={t.slug} onClick={() => setOpenTop(t.slug)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 0', cursor: 'pointer', fontSize: 13, fontWeight: on ? 600 : 400 }}>
-                  <span style={checkBox(on)}>{on && <Tick />}</span>{t.name}
-                </label>
+                <Link key={t.slug} href={`/category/${t.slug}`} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 0', fontSize: 13, fontWeight: on ? 600 : 400, color: on ? 'var(--green)' : 'var(--color-text)', textDecoration: 'none' }}>
+                  <span style={radio(on)}>{on && <RadioDot />}</span>{t.name}
+                </Link>
               );
             })}
           </div>
@@ -119,7 +125,7 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
                   const active = catNav.activeSlugs.includes(c.slug);
                   return (
                     <Link key={c.slug} href={`/category/${c.slug}`} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 4px', borderRadius: 8, fontSize: 13, fontWeight: active ? 600 : 400, color: active ? 'var(--green)' : 'var(--color-text)', textDecoration: 'none' }}>
-                      <span style={checkBox(active)}>{active && <Tick />}</span>{c.name}
+                      <span style={radio(active)}>{active && <RadioDot />}</span>{c.name}
                     </Link>
                   );
                 })}
