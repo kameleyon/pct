@@ -72,7 +72,9 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
   const activeTop = catNav?.currentTop;
   const activeTopName = catNav?.tops.find((t) => t.slug === activeTop)?.name;
   const subs = catNav?.tops.find((t) => t.slug === activeTop)?.children ?? [];
-  const activeSubName = subs.find((c) => catNav?.activeSlugs.includes(c.slug))?.name;
+  // "All" is active when the page itself is the hub (no specific subcategory picked)
+  const onHub = !!catNav && catNav.activeSlugs[catNav.activeSlugs.length - 1] === activeTop;
+  const activeSubName = onHub ? `All ${activeTopName ?? ''}`.trim() : subs.find((c) => catNav?.activeSlugs.includes(c.slug))?.name;
   const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system', 'dia', 'shk', 'len', 'pt'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
 
@@ -149,6 +151,9 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
               <DropHead title="Subcategory" value={activeSubName} open={subOpen} onClick={() => setSubOpen((v) => !v)} />
               {subOpen && (
               <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', maxHeight: subs.length > 9 ? 260 : undefined, overflowY: subs.length > 9 ? 'auto' : undefined, paddingRight: subs.length > 9 ? 6 : 0 }}>
+                <Link href={`/category/${activeTop}`} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 4px', borderRadius: 8, fontSize: 13, fontWeight: onHub ? 600 : 400, color: onHub ? 'var(--green)' : 'var(--color-text)', textDecoration: 'none' }}>
+                  <span style={radio(onHub)}>{onHub && <RadioDot />}</span>All {activeTopName}
+                </Link>
                 {subs.map((c) => {
                   const active = catNav.activeSlugs.includes(c.slug);
                   return (
