@@ -33,22 +33,10 @@ export default async function CategoryPage({
     </div>
   );
 
-  // Parent category → show its product lines as a subcategory grid.
+  // Parent category → show its product lines as a subcategory grid, above the
+  // filterable product listing for the whole subtree (see below).
   const children = await getChildCategories(category.id);
-  if (children.length > 0) {
-    return (
-      <main className="wrap" style={{ paddingTop: 20, paddingBottom: 72 }}>
-        <Breadcrumb />
-        <h1 style={{ fontSize: 34, margin: '0 0 6px' }}>{category.name}</h1>
-        <div style={{ fontSize: 13.5, color: 'var(--muted)', fontWeight: 600, maxWidth: 640, marginBottom: 28 }}>{category.description}</div>
-        <div className="cat-grid">
-          {children.map((c) => <CategoryCard key={c.slug} c={c} />)}
-        </div>
-      </main>
-    );
-  }
 
-  // Leaf category → product listing with filters.
   const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
   const [facets, { items, total }] = await Promise.all([
     getCategoryFacets(category.id),
@@ -87,6 +75,9 @@ export default async function CategoryPage({
   const currentTop = ancestors[0]?.slug ?? slug;
   const activeSlugs = [...ancestors.map((a) => a.slug), slug];
   const catNav = { tops, currentTop, activeSlugs };
+  // Browsing a hub/sub-category aggregates products across its whole subtree,
+  // so look up each product's own category slug for an accurate thumbnail.
+  const slugById = Object.fromEntries(allCats.map((c) => [c.id, c.slug]));
 
   return (
     <main className="wrap" style={{ paddingTop: 20, paddingBottom: 72 }}>
@@ -102,6 +93,12 @@ export default async function CategoryPage({
         </div>
       </div>
 
+      {children.length > 0 && (
+        <div className="cat-grid" style={{ marginBottom: 32 }}>
+          {children.map((c) => <CategoryCard key={c.slug} c={c} />)}
+        </div>
+      )}
+
       <div className="browse-layout">
         <FilterRail facets={facets} catNav={catNav} />
         <div>
@@ -109,7 +106,7 @@ export default async function CategoryPage({
             <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 48, textAlign: 'center', color: 'var(--muted)' }}>No products match these filters.</div>
           ) : (
             <div className="browse-grid">
-              {items.map((p) => <ProductCard key={p.id} product={p} categorySlug={slug} />)}
+              {items.map((p) => <ProductCard key={p.id} product={p} categorySlug={slugById[p.category_id] ?? slug} />)}
             </div>
           )}
           {items.length < total && (

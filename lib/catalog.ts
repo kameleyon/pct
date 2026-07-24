@@ -33,9 +33,9 @@ export type Category = {
 const PRODUCT_COLS =
   'id,part_number,slug,name,category_id,measurement_system,flutes,coating,material,specs,price,sale_price,stock_quantity,primary_image_url';
 
-// Count products in a category and all its descendants (hub → sub-category → line).
+// A category and all its descendants (hub → sub-category → line).
 // Our taxonomy is at most 3 levels, so a few BFS hops cover the whole subtree.
-async function countSubtreeProducts(sb: ReturnType<typeof getSupabase>, rootId: string): Promise<number> {
+async function getSubtreeCategoryIds(sb: ReturnType<typeof getSupabase>, rootId: string): Promise<string[]> {
   const ids: string[] = [rootId];
   let frontier: string[] = [rootId];
   for (let depth = 0; depth < 3 && frontier.length; depth++) {
@@ -44,6 +44,11 @@ async function countSubtreeProducts(sb: ReturnType<typeof getSupabase>, rootId: 
     ids.push(...next);
     frontier = next;
   }
+  return ids;
+}
+
+async function countSubtreeProducts(sb: ReturnType<typeof getSupabase>, rootId: string): Promise<number> {
+  const ids = await getSubtreeCategoryIds(sb, rootId);
   const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).in('category_id', ids);
   return count ?? 0;
 }
@@ -262,7 +267,10 @@ export async function getProducts(q: ProductQuery): Promise<{ items: Product[]; 
   const pageSize = q.pageSize ?? 24;
   const page = q.page ?? 1;
   try {
-    let query = sb.from('products').select(PRODUCT_COLS, { count: 'exact' }).eq('category_id', q.categoryId);
+    // Include products from descendant categories too, so a hub or sub-category
+    // page (not just a leaf line) can still list and filter its products.
+    const categoryIds = await getSubtreeCategoryIds(sb, q.categoryId);
+    let query = sb.from('products').select(PRODUCT_COLS, { count: 'exact' }).in('category_id', categoryIds);
     if (q.flutes?.length) query = query.in('flutes', q.flutes);
     if (q.coatings?.length) query = query.in('coating', q.coatings);
     if (q.systems?.length) query = query.in('measurement_system', q.systems);
@@ -318,10 +326,11 @@ export async function getCategoryFacets(categoryId: string): Promise<Facets> {
   const sb = getSupabase();
   const empty: Facets = { flutes: [], coatings: [], systems: [], geometries: [], flats: [], applications: [], cuts: [], diameters: [], shanks: [], lengths: [], pointAngles: [] };
   try {
+    const categoryIds = await getSubtreeCategoryIds(sb, categoryId);
     const { data } = await sb
       .from('products')
       .select('flutes,coating,measurement_system,specs')
-      .eq('category_id', categoryId)
+      .in('category_id', categoryIds)
       .limit(5000);
     const flutes = new Set<number>(), coatings = new Set<string>(), systems = new Set<string>();
     const geometries = new Set<string>(), flats = new Set<string>(), applications = new Set<string>(), cuts = new Set<string>();
