@@ -11,6 +11,7 @@ const chip: React.CSSProperties = {
 
 export function ProductCard({ product, categorySlug }: { product: Product; categorySlug: string }) {
   const coated = product.coating && product.coating !== 'Uncoated';
+  const image = product.primary_image_url || categoryImage(categorySlug);
   // Specials badge: % off when a sale price is set below list. No specials yet → nothing renders.
   const discountPct =
     product.price && product.sale_price && product.sale_price < product.price
@@ -22,7 +23,7 @@ export function ProductCard({ product, categorySlug }: { product: Product; categ
         {/* image panel — favorite only */}
         <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', background: '#fff', borderRadius: 14, border: '1px solid rgba(43,42,38,.06)', overflow: 'hidden', display: 'grid', placeItems: 'center', padding: 24 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={categoryImage(categorySlug)} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          <img src={image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           <FavoriteButton productId={product.id} />
         </div>
 
@@ -63,7 +64,7 @@ export function ProductCard({ product, categorySlug }: { product: Product; categ
       </Link>
 
       {/* footer */}
-      <AddToCart productId={product.id} partNumber={product.part_number} name={product.name} image={categoryImage(categorySlug)} />
+      <AddToCart productId={product.id} partNumber={product.part_number} name={product.name} image={image} />
     </article>
   );
 }

@@ -58,13 +58,13 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
             {[0, 1, 2, 3].map((i) => (
               <div key={i} style={{ aspectRatio: '1/1', borderRadius: 13, overflow: 'hidden', background: '#fff', padding: 8, outline: i === 0 ? '2px solid var(--green)' : undefined, outlineOffset: -2 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={categoryImage(category?.slug ?? '')} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src={product.primary_image_url || categoryImage(category?.slug ?? '')} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
             ))}
           </div>
           <div style={{ aspectRatio: '1/1', borderRadius: 18, overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', padding: 48 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={categoryImage(category?.slug ?? '')} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src={product.primary_image_url || categoryImage(category?.slug ?? '')} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
         </div>
 
