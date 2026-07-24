@@ -43,13 +43,18 @@ const Chevron = ({ open }: { open: boolean }) => (
     <path d="m6 9 6 6 6-6" />
   </svg>
 );
-// dropdown-style header: current pick shown collapsed, click to expand the full list
+// dropdown-style header: current pick shown collapsed, click to expand the full list.
+// Label+chevron on one row, value on its own line below (truncated if long) —
+// keeps a long category name from colliding with the label at sidebar width.
 const DropHead = ({ title, value, open, onClick }: { title: string; value?: string; open: boolean; onClick: () => void }) => (
-  <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: open ? 12 : 0 }}>
-    <div style={label}>{title}</div>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--color-text)' }}>
-      {!open && value}<Chevron open={open} />
+  <div onClick={onClick} style={{ cursor: 'pointer', marginBottom: open ? 12 : 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      <div style={{ ...label, marginBottom: 0 }}>{title}</div>
+      <Chevron open={open} />
     </div>
+    {!open && value && (
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</div>
+    )}
   </div>
 );
 
