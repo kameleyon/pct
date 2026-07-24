@@ -37,6 +37,21 @@ const Tick = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" s
 // single-select indicator (Category / Subcategory pick one, unlike the true multi-select facet checkboxes)
 const radio = (on: boolean): React.CSSProperties => ({ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${on ? 'var(--green)' : 'rgba(43,42,38,.22)'}`, background: 'transparent', flex: 'none', display: 'grid', placeItems: 'center' });
 const RadioDot = () => <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--green)' }} />;
+const Chevron = ({ open }: { open: boolean }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"
+    style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s ease', flex: 'none' }}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+// dropdown-style header: current pick shown collapsed, click to expand the full list
+const DropHead = ({ title, value, open, onClick }: { title: string; value?: string; open: boolean; onClick: () => void }) => (
+  <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: open ? 12 : 0 }}>
+    <div style={label}>{title}</div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: 'var(--color-text)' }}>
+      {!open && value}<Chevron open={open} />
+    </div>
+  </div>
+);
 
 export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav }) {
   const router = useRouter();
@@ -44,11 +59,15 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
   const params = useSearchParams();
   const toggle = useToggle();
   const [term, setTerm] = useState('');
+  const [catOpen, setCatOpen] = useState(false);
+  const [subOpen, setSubOpen] = useState(false);
   // Always derive from the current page's props (not local state) so switching
   // categories via any navigation path — sidebar, top nav, back button — keeps
   // the subcategory list in sync instead of going stale.
   const activeTop = catNav?.currentTop;
+  const activeTopName = catNav?.tops.find((t) => t.slug === activeTop)?.name;
   const subs = catNav?.tops.find((t) => t.slug === activeTop)?.children ?? [];
+  const activeSubName = subs.find((c) => catNav?.activeSlugs.includes(c.slug))?.name;
   const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system', 'dia', 'shk', 'len', 'pt'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
 
@@ -103,12 +122,15 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
       </div>
 
       {/* site-wide category nav — single-select, so these navigate directly
-          (like Subcategory below) rather than behaving like filter checkboxes */}
+          (like Subcategory below) rather than behaving like filter checkboxes.
+          Collapsed by default to a dropdown-style header showing just the
+          current pick, since the full list can run long and isn't useful
+          once a choice is already made. */}
       {catNav && catNav.tops.length > 0 && (
         <>
           <div style={sectionStyle}>
-            <div style={label}>Category</div>
-            {catNav.tops.map((t) => {
+            <DropHead title="Category" value={activeTopName} open={catOpen} onClick={() => setCatOpen((v) => !v)} />
+            {catOpen && catNav.tops.map((t) => {
               const on = t.slug === activeTop;
               return (
                 <Link key={t.slug} href={`/category/${t.slug}`} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 0', fontSize: 13, fontWeight: on ? 600 : 400, color: on ? 'var(--green)' : 'var(--color-text)', textDecoration: 'none' }}>
@@ -119,7 +141,8 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
           </div>
           {subs.length > 0 && (
             <div style={sectionStyle}>
-              <div style={label}>Subcategory</div>
+              <DropHead title="Subcategory" value={activeSubName} open={subOpen} onClick={() => setSubOpen((v) => !v)} />
+              {subOpen && (
               <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', maxHeight: subs.length > 9 ? 260 : undefined, overflowY: subs.length > 9 ? 'auto' : undefined, paddingRight: subs.length > 9 ? 6 : 0 }}>
                 {subs.map((c) => {
                   const active = catNav.activeSlugs.includes(c.slug);
@@ -130,6 +153,7 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
                   );
                 })}
               </div>
+              )}
             </div>
           )}
         </>
