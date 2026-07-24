@@ -57,6 +57,18 @@ const DropHead = ({ title, value, open, onClick }: { title: string; value?: stri
     )}
   </div>
 );
+const CountBadge = ({ n }: { n: number }) => (
+  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#fff', background: 'var(--green)', borderRadius: 999, padding: '1px 6px', lineHeight: 1.5 }}>{n}</span>
+);
+// collapsible header for the multi-select facet sections (Chips/List) — shows
+// a count badge of currently-active values instead of a single picked value,
+// since these are genuine multi-select filters rather than a single choice.
+const FacetHead = ({ title, count, open, onClick }: { title: string; count: number; open: boolean; onClick: () => void }) => (
+  <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+    <div style={{ ...label, marginBottom: 0, display: 'flex', alignItems: 'center', gap: 7 }}>{title}{count > 0 && <CountBadge n={count} />}</div>
+    <Chevron open={open} />
+  </div>
+);
 
 export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav }) {
   const router = useRouter();
@@ -78,6 +90,23 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
   const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system', 'dia', 'shk', 'len', 'pt'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
 
+  // Facet sections collapse too, defaulting open only where a filter is
+  // already applied — so a shared/bookmarked filtered link doesn't hide the
+  // very selection it's showing.
+  const FACET_PARAMS: Record<string, string> = {
+    Measurement: 'system', 'Cutting Diameter': 'dia', 'Shank Diameter': 'shk', 'Overall Length': 'len',
+    Flutes: 'flutes', Geometry: 'geometry', Cut: 'cut', Coating: 'coating', 'Point Angle': 'pt', Application: 'app', 'Shank Flat': 'flat',
+  };
+  const [openSections, setOpenSections] = useState<Set<string>>(
+    () => new Set(Object.entries(FACET_PARAMS).filter(([, p]) => params.get(p)).map(([title]) => title))
+  );
+  const toggleSection = (title: string) =>
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      next.has(title) ? next.delete(title) : next.add(title);
+      return next;
+    });
+
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const t = term.trim();
@@ -85,22 +114,32 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
   };
 
   // horizontal chips (short value sets)
-  const Chips = ({ title, param, values }: { title: string; param: string; values: string[] }) =>
-    values.length > 1 ? (
+  const Chips = ({ title, param, values }: { title: string; param: string; values: string[] }) => {
+    if (values.length <= 1) return null;
+    const open = openSections.has(title);
+    const count = values.filter((v) => has(params, param, v)).length;
+    return (
       <div style={sectionStyle}>
-        <div style={label}>{title}</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {values.map((v) => <span key={v} onClick={() => toggle(param, v)} style={chip(has(params, param, v))}>{v}</span>)}
-        </div>
+        <FacetHead title={title} count={count} open={open} onClick={() => toggleSection(title)} />
+        {open && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            {values.map((v) => <span key={v} onClick={() => toggle(param, v)} style={chip(has(params, param, v))}>{v}</span>)}
+          </div>
+        )}
       </div>
-    ) : null;
+    );
+  };
 
   // vertical checkbox list, scrolls when long (used for dimensions & multi-value facets)
-  const List = ({ title, param, values }: { title: string; param: string; values: string[] }) =>
-    values.length > 1 ? (
+  const List = ({ title, param, values }: { title: string; param: string; values: string[] }) => {
+    if (values.length <= 1) return null;
+    const open = openSections.has(title);
+    const count = values.filter((v) => has(params, param, v)).length;
+    return (
       <div style={sectionStyle}>
-        <div style={label}>{title}</div>
-        <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', maxHeight: values.length > 8 ? 210 : undefined, overflowY: values.length > 8 ? 'auto' : undefined, paddingRight: values.length > 8 ? 6 : 0 }}>
+        <FacetHead title={title} count={count} open={open} onClick={() => toggleSection(title)} />
+        {open && (
+        <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', marginTop: 12, maxHeight: values.length > 8 ? 210 : undefined, overflowY: values.length > 8 ? 'auto' : undefined, paddingRight: values.length > 8 ? 6 : 0 }}>
           {values.map((v) => {
             const on = has(params, param, v);
             return (
@@ -110,8 +149,10 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
             );
           })}
         </div>
+        )}
       </div>
-    ) : null;
+    );
+  };
 
   return (
     <aside className="filter-rail" style={{ background: 'var(--surface)', borderRadius: 22, padding: '10px 22px 22px' }}>
