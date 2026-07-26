@@ -13,6 +13,7 @@ import { getStripe } from '@/lib/stripe';
 export async function createCheckoutSession(
   lines: { productId: string; qty: number }[]
 ): Promise<{ url?: string; error?: string }> {
+  try {
   const sb = await createSupabaseServer();
   const { data: { user } } = await sb.auth.getUser(); // may be null — guest checkout allowed
   if (!lines?.length) return { error: 'Your cart is empty.' };
@@ -64,4 +65,10 @@ export async function createCheckoutSession(
   });
 
   return { url: session.url ?? undefined };
+  } catch (e) {
+    console.error('checkout error:', e);
+    const msg = (e as Error)?.message ?? '';
+    if (/STRIPE_SECRET_KEY|service-role/i.test(msg)) return { error: 'Online checkout isn’t configured yet. Please try Request a Quote.' };
+    return { error: 'Checkout could not start. Please try again.' };
+  }
 }

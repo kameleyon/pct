@@ -33,10 +33,12 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
     // Guest checkout allowed — no sign-in required.
     setErr(null);
     setCheckingOut(true);
-    createCheckoutSession(lines.map((l) => ({ productId: l.productId, qty: l.qty }))).then((r) => {
-      if (r.url) window.location.href = r.url;
-      else { setErr(r.error ?? 'Checkout failed.'); setCheckingOut(false); }
-    });
+    createCheckoutSession(lines.map((l) => ({ productId: l.productId, qty: l.qty })))
+      .then((r) => {
+        if (r.url) window.location.href = r.url;
+        else { setErr(r.error ?? 'Checkout failed.'); setCheckingOut(false); }
+      })
+      .catch(() => { setErr('Checkout could not start. Please try again.'); setCheckingOut(false); });
   };
 
   return (

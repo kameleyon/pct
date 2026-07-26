@@ -12,10 +12,13 @@ const chip: React.CSSProperties = {
 export function ProductCard({ product, categorySlug }: { product: Product; categorySlug: string }) {
   const coated = product.coating && product.coating !== 'Uncoated';
   const image = product.primary_image_url || categoryImage(categorySlug);
-  // Specials badge: % off when a sale price is set below list. No specials yet → nothing renders.
+  const listPrice = product.price;
+  const effPrice = product.sale_price ?? product.price; // what the buyer pays
+  const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  // Specials badge: % off when a sale price is set below list.
   const discountPct =
-    product.price && product.sale_price && product.sale_price < product.price
-      ? Math.round((1 - product.sale_price / product.price) * 100)
+    listPrice && product.sale_price && product.sale_price < listPrice
+      ? Math.round((1 - product.sale_price / listPrice) * 100)
       : 0;
   return (
     <article className="prod-card" style={{ display: 'flex', flexDirection: 'column', background: '#F3EFE5', border: '1px solid rgba(43,42,38,.12)', borderRadius: 20, overflow: 'hidden', height: '100%' }}>
@@ -55,8 +58,14 @@ export function ProductCard({ product, categorySlug }: { product: Product; categ
 
         {/* price row — quote left, specials %OFF right (shown only for sale items) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 16 }}>
-          <span style={{ fontWeight: 600, fontSize: 19, color: 'var(--color-text)', lineHeight: 1 }}>Request Quote</span>
-          {/* "Get Details" removed — this slot now shows the specials badge when a sale price is set */}
+          {effPrice ? (
+            <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontWeight: 600, fontSize: 21, color: 'var(--color-text)', lineHeight: 1 }}>{money(effPrice)}</span>
+              {discountPct > 0 && listPrice && <span style={{ fontSize: 13, color: 'var(--muted-2)', textDecoration: 'line-through' }}>{money(listPrice)}</span>}
+            </span>
+          ) : (
+            <span style={{ fontWeight: 600, fontSize: 19, color: 'var(--color-text)', lineHeight: 1 }}>Request Quote</span>
+          )}
           {discountPct > 0 && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 700, color: '#fff', background: 'var(--color-gold)', padding: '5px 10px', borderRadius: 999 }}>{discountPct}% OFF</span>
           )}
