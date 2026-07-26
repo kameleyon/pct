@@ -2,16 +2,23 @@
 import { useState, useTransition } from 'react';
 import { useCart } from './CartProvider';
 import { requestQuoteAction } from '@/app/cart/actions';
+import { createCheckoutSession } from '@/app/checkout/actions';
 import { useAuthModal } from '@/components/auth/AuthProvider';
+
+const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
   const { lines, count, open, setOpen, setQty, remove, clear } = useCart();
   const auth = useAuthModal();
   const [pending, start] = useTransition();
+  const [checkingOut, setCheckingOut] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   if (!open) return null;
+
+  const subtotal = lines.reduce((s, l) => s + (l.price && l.price > 0 ? l.price * l.qty : 0), 0);
+  const hasPriced = subtotal > 0;
 
   const submitQuote = () => {
     setErr(null);
@@ -19,6 +26,16 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
     start(async () => {
       const r = await requestQuoteAction({});
       if (r.ok) { clear(); setDone(true); } else setErr(r.error ?? 'Something went wrong.');
+    });
+  };
+
+  const checkout = () => {
+    setErr(null);
+    if (!isAuthed) { setOpen(false); auth.open('signin'); return; }
+    setCheckingOut(true);
+    createCheckoutSession(lines.map((l) => ({ productId: l.productId, qty: l.qty }))).then((r) => {
+      if (r.url) window.location.href = r.url;
+      else { setErr(r.error ?? 'Checkout failed.'); setCheckingOut(false); }
     });
   };
 
@@ -54,7 +71,7 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, color: 'var(--color-accent)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 2 }}>№ {l.partNumber}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 2 }}>№ {l.partNumber} {l.price && l.price > 0 ? <span style={{ color: 'var(--color-text)', fontWeight: 600 }}>· {money(l.price)}</span> : <span style={{ color: 'var(--muted-2)' }}>· quote</span>}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid rgba(43,42,38,.14)', borderRadius: 9, overflow: 'hidden' }}>
                         <button onClick={() => setQty(l.productId, l.qty - 1)} style={qtyBtn}>−</button>
@@ -73,10 +90,27 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
         {!done && lines.length > 0 && (
           <footer style={{ padding: 18, borderTop: '1px solid rgba(43,42,38,.08)' }}>
             {err && <div style={{ background: '#fbecea', color: '#b23b2e', fontSize: 12.5, fontWeight: 600, padding: '8px 10px', borderRadius: 9, marginBottom: 10 }}>{err}</div>}
-            <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '0 0 10px' }}>Factory-direct pricing is quoted per order. Submit your list and we’ll email pricing.</p>
-            <button onClick={submitQuote} disabled={pending} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
-              {pending ? 'Submitting…' : isAuthed ? 'Request Quote' : 'Sign in to Request Quote'}
-            </button>
+            {hasPriced ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                  <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>Subtotal (online items)</span>
+                  <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text)' }}>{money(subtotal)}</span>
+                </div>
+                <button onClick={checkout} disabled={checkingOut} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+                  {checkingOut ? 'Redirecting…' : isAuthed ? 'Buy Now — Secure Checkout' : 'Sign in to Check Out'}
+                </button>
+                <button onClick={submitQuote} disabled={pending} style={{ width: '100%', height: 42, borderRadius: 12, background: 'transparent', color: 'var(--color-accent)', border: '1px solid rgba(43,42,38,.14)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', marginTop: 8 }}>
+                  {pending ? 'Submitting…' : 'Request a quote instead'}
+                </button>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '0 0 10px' }}>Factory-direct pricing is quoted per order. Submit your list and we’ll email pricing.</p>
+                <button onClick={submitQuote} disabled={pending} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+                  {pending ? 'Submitting…' : isAuthed ? 'Request Quote' : 'Sign in to Request Quote'}
+                </button>
+              </>
+            )}
           </footer>
         )}
       </aside>

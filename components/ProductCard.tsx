@@ -64,7 +64,7 @@ export function ProductCard({ product, categorySlug }: { product: Product; categ
       </Link>
 
       {/* footer */}
-      <AddToCart productId={product.id} partNumber={product.part_number} name={product.name} image={image} />
+      <AddToCart productId={product.id} partNumber={product.part_number} name={product.name} image={image} price={product.sale_price ?? product.price} />
     </article>
   );
 }

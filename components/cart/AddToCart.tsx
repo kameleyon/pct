@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useCart } from './CartProvider';
 
-export function AddToCart({ productId, partNumber, name, image }: { productId: string; partNumber: string; name: string; image: string }) {
+export function AddToCart({ productId, partNumber, name, image, price }: { productId: string; partNumber: string; name: string; image: string; price?: number | null }) {
   const { add } = useCart();
   const [qty, setQty] = useState(1);
   return (
@@ -14,7 +14,7 @@ export function AddToCart({ productId, partNumber, name, image }: { productId: s
         style={{ width: 50, height: 42, textAlign: 'center', fontWeight: 600, fontSize: 15, color: 'var(--color-text)', background: '#fff', border: '1px solid rgba(43,42,38,.12)', borderRadius: 11, outline: 'none' }}
       />
       <button
-        onClick={() => add({ productId, partNumber, name, image }, qty)}
+        onClick={() => add({ productId, partNumber, name, image, price }, qty)}
         className="h-gold"
         style={{ flex: 1, height: 42, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', color: '#fff', background: 'var(--color-gold)', border: 0, borderRadius: 11 }}
       >

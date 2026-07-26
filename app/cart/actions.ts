@@ -9,6 +9,7 @@ export type CartLine = {
   name: string;
   image: string;
   qty: number;
+  price?: number | null; // effective online price (sale_price ?? price); null = quote-only
 };
 
 /** Resolve (or lazily create) the signed-in user's cart id. Returns null for guests. */
@@ -28,7 +29,7 @@ export async function getCartAction(): Promise<CartLine[]> {
   if (!cartId) return [];
   const { data } = await sb
     .from('cart_items')
-    .select('quantity, product:products(id,part_number,name,primary_image_url)')
+    .select('quantity, product:products(id,part_number,name,primary_image_url,price,sale_price)')
     .eq('cart_id', cartId);
   return (data ?? []).map((row: any) => ({
     productId: row.product.id,
@@ -36,6 +37,7 @@ export async function getCartAction(): Promise<CartLine[]> {
     name: row.product.name,
     image: row.product.primary_image_url ?? '',
     qty: row.quantity,
+    price: row.product.sale_price ?? row.product.price ?? null,
   }));
 }
 

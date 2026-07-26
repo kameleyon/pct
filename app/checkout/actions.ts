@@ -1,0 +1,68 @@
+'use server';
+
+import { headers } from 'next/headers';
+import { createSupabaseServer } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { getStripe } from '@/lib/stripe';
+
+/**
+ * Build a Stripe Checkout Session from cart lines. The client sends only
+ * product ids + quantities; prices are looked up authoritatively from the DB
+ * (never trusted from the browser). Items without a price are dropped.
+ */
+export async function createCheckoutSession(
+  lines: { productId: string; qty: number }[]
+): Promise<{ url?: string; error?: string }> {
+  const sb = await createSupabaseServer();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return { error: 'Please sign in to check out.' };
+  if (!lines?.length) return { error: 'Your cart is empty.' };
+
+  const admin = getSupabaseAdmin();
+  const ids = lines.map((l) => l.productId);
+  const { data: products } = await admin.from('products').select('id,part_number,name,price,sale_price').in('id', ids);
+  const byId = new Map((products ?? []).map((p: any) => [p.id, p]));
+
+  const items = lines
+    .map((l) => {
+      const p = byId.get(l.productId);
+      const unit = p ? (p.sale_price ?? p.price) : null;
+      return unit ? { p, unit: Number(unit), qty: Math.max(1, Math.floor(l.qty)) } : null;
+    })
+    .filter((x): x is { p: any; unit: number; qty: number } => x !== null);
+
+  if (!items.length) return { error: 'None of your cart items have online pricing yet — use Request a Quote instead.' };
+
+  const total = items.reduce((s, i) => s + i.unit * i.qty, 0);
+  const { data: order, error: orderErr } = await admin
+    .from('orders')
+    .insert({ profile_id: user.id, status: 'pending', subtotal: total, tax: 0, shipping: 0, total, contact: { email: user.email } })
+    .select('id')
+    .single();
+  if (orderErr || !order) return { error: orderErr?.message ?? 'Could not create order.' };
+
+  await admin.from('order_items').insert(
+    items.map((i) => ({ order_id: order.id, product_id: i.p.id, part_number: i.p.part_number, name: i.p.name, unit_price: i.unit, quantity: i.qty }))
+  );
+
+  const h = await headers();
+  const origin = `${h.get('x-forwarded-proto') ?? 'https'}://${h.get('host')}`;
+  const stripe = getStripe();
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    customer_email: user.email ?? undefined,
+    line_items: items.map((i) => ({
+      quantity: i.qty,
+      price_data: {
+        currency: 'usd',
+        unit_amount: Math.round(i.unit * 100),
+        product_data: { name: i.p.name, metadata: { part_number: i.p.part_number } },
+      },
+    })),
+    success_url: `${origin}/checkout/success?order=${order.id}`,
+    cancel_url: `${origin}/`,
+    metadata: { orderId: order.id },
+  });
+
+  return { url: session.url ?? undefined };
+}
