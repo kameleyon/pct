@@ -20,12 +20,16 @@ export async function POST(req: Request) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as { metadata?: { orderId?: string } };
+    const session = event.data.object as {
+      metadata?: { orderId?: string };
+      customer_details?: { email?: string | null } | null;
+    };
     const orderId = session.metadata?.orderId;
     if (orderId) {
       const admin = getSupabaseAdmin();
-      await admin.from('orders').update({ status: 'paid' }).eq('id', orderId);
-      // empty the buyer's cart now that the order is paid
+      const email = session.customer_details?.email ?? undefined;
+      await admin.from('orders').update({ status: 'paid', ...(email ? { contact: { email } } : {}) }).eq('id', orderId);
+      // empty the buyer's cart now that the order is paid (members; guests clear locally on success)
       const { data: order } = await admin.from('orders').select('profile_id').eq('id', orderId).single();
       if (order?.profile_id) {
         const { data: cart } = await admin.from('carts').select('id').eq('profile_id', order.profile_id).maybeSingle();

@@ -30,8 +30,8 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
   };
 
   const checkout = () => {
+    // Guest checkout allowed — no sign-in required.
     setErr(null);
-    if (!isAuthed) { setOpen(false); auth.open('signin'); return; }
     setCheckingOut(true);
     createCheckoutSession(lines.map((l) => ({ productId: l.productId, qty: l.qty }))).then((r) => {
       if (r.url) window.location.href = r.url;
@@ -97,7 +97,7 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
                   <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text)' }}>{money(subtotal)}</span>
                 </div>
                 <button onClick={checkout} disabled={checkingOut} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
-                  {checkingOut ? 'Redirecting…' : isAuthed ? 'Buy Now — Secure Checkout' : 'Sign in to Check Out'}
+                  {checkingOut ? 'Redirecting…' : 'Buy Now — Secure Checkout'}
                 </button>
                 <button onClick={submitQuote} disabled={pending} style={{ width: '100%', height: 42, borderRadius: 12, background: 'transparent', color: 'var(--color-accent)', border: '1px solid rgba(43,42,38,.14)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', marginTop: 8 }}>
                   {pending ? 'Submitting…' : 'Request a quote instead'}

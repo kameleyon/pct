@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ClearCartOnSuccess } from '@/components/cart/ClearCartOnSuccess';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,6 +7,7 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
   const { order } = await searchParams;
   return (
     <main className="wrap" style={{ padding: '80px 24px', display: 'grid', placeItems: 'center' }}>
+      <ClearCartOnSuccess />
       <div style={{ background: 'var(--color-surface)', borderRadius: 24, padding: '48px 40px', textAlign: 'center', maxWidth: 480 }}>
         <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-accent-100)', color: 'var(--color-accent)', display: 'grid', placeItems: 'center', margin: '0 auto 20px' }}>
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>

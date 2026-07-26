@@ -14,8 +14,7 @@ export async function createCheckoutSession(
   lines: { productId: string; qty: number }[]
 ): Promise<{ url?: string; error?: string }> {
   const sb = await createSupabaseServer();
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) return { error: 'Please sign in to check out.' };
+  const { data: { user } } = await sb.auth.getUser(); // may be null — guest checkout allowed
   if (!lines?.length) return { error: 'Your cart is empty.' };
 
   const admin = getSupabaseAdmin();
@@ -36,7 +35,7 @@ export async function createCheckoutSession(
   const total = items.reduce((s, i) => s + i.unit * i.qty, 0);
   const { data: order, error: orderErr } = await admin
     .from('orders')
-    .insert({ profile_id: user.id, status: 'pending', subtotal: total, tax: 0, shipping: 0, total, contact: { email: user.email } })
+    .insert({ profile_id: user?.id ?? null, status: 'pending', subtotal: total, tax: 0, shipping: 0, total, contact: user?.email ? { email: user.email } : {} })
     .select('id')
     .single();
   if (orderErr || !order) return { error: orderErr?.message ?? 'Could not create order.' };
@@ -50,7 +49,7 @@ export async function createCheckoutSession(
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
-    customer_email: user.email ?? undefined,
+    customer_email: user?.email ?? undefined, // guests: Stripe collects the email on its page
     line_items: items.map((i) => ({
       quantity: i.qty,
       price_data: {
