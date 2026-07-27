@@ -218,7 +218,15 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0 6px' }}>
         <span style={{ fontSize: 14, fontWeight: 600 }}>Filters</span>
-        {anyFilter && <span onClick={clearAll} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--muted-2)' }}>Clear all</span>}
+        <span
+          onClick={anyFilter ? clearAll : undefined}
+          style={{
+            cursor: anyFilter ? 'pointer' : 'default', fontSize: 12, fontWeight: 600,
+            color: anyFilter ? 'var(--muted-2)' : 'rgba(43,42,38,.28)',
+          }}
+        >
+          Clear all
+        </span>
       </div>
 
       {/* site-wide category nav — single-select, so these navigate directly
