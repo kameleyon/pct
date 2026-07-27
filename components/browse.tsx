@@ -1,8 +1,10 @@
 'use client';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { type Facets } from '@/lib/catalog';
+
+const FILTER_STORAGE_KEY = 'pct-filters';
 
 type Sub = { slug: string; name: string };
 type Top = { slug: string; name: string; children: Sub[] };
@@ -89,6 +91,51 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
   const activeSubName = onHub ? `All ${activeTopName ?? ''}`.trim() : subs.find((c) => catNav?.activeSlugs.includes(c.slug))?.name;
   const FILTER_KEYS = ['flutes', 'geometry', 'coating', 'cut', 'flat', 'app', 'system', 'dia', 'shk', 'len', 'pt'];
   const anyFilter = FILTER_KEYS.some((k) => params.get(k));
+  // What values are actually valid on THIS category, for checking remembered filters below.
+  const FACET_VALUES: Record<string, string[]> = {
+    system: facets.systems, dia: facets.diameters, shk: facets.shanks, len: facets.lengths,
+    flutes: facets.flutes.map(String), geometry: facets.geometries, cut: facets.cuts,
+    coating: facets.coatings, pt: facets.pointAngles, app: facets.applications, flat: facets.flats,
+  };
+
+  // Remember the user's facet choices for this session (sessionStorage, so it
+  // clears when the browser/tab session ends) so they carry over when
+  // browsing to a different category — but only re-apply values that are
+  // actually valid on the new category, and never override an explicit,
+  // already-filtered URL (e.g. a shared link).
+  useEffect(() => {
+    const state: Record<string, string> = {};
+    FILTER_KEYS.forEach((k) => {
+      const v = params.get(k);
+      if (v) state[k] = v;
+    });
+    if (Object.keys(state).length > 0) sessionStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(state));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.toString()]);
+
+  useEffect(() => {
+    if (anyFilter) return;
+    let saved: Record<string, string> | null = null;
+    try {
+      const raw = sessionStorage.getItem(FILTER_STORAGE_KEY);
+      saved = raw ? JSON.parse(raw) : null;
+    } catch {
+      saved = null;
+    }
+    if (!saved) return;
+
+    const next = new URLSearchParams(params.toString());
+    let changed = false;
+    for (const [key, value] of Object.entries(saved)) {
+      const kept = value.split(',').filter((v) => (FACET_VALUES[key] ?? []).includes(v));
+      if (kept.length > 0) {
+        next.set(key, kept.join(','));
+        changed = true;
+      }
+    }
+    if (changed) router.replace(`${pathname}?${next.toString()}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   // Facet sections collapse too, defaulting open only where a filter is
   // already applied — so a shared/bookmarked filtered link doesn't hide the
@@ -139,7 +186,7 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
       <div style={sectionStyle}>
         <FacetHead title={title} count={count} open={open} onClick={() => toggleSection(title)} />
         {open && (
-        <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', marginTop: 12, maxHeight: values.length > 8 ? 210 : undefined, overflowY: values.length > 8 ? 'auto' : undefined, paddingRight: values.length > 8 ? 6 : 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 12 }}>
           {values.map((v) => {
             const on = has(params, param, v);
             return (
@@ -154,8 +201,13 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
     );
   };
 
+  const clearAll = () => {
+    sessionStorage.removeItem(FILTER_STORAGE_KEY);
+    router.push(pathname);
+  };
+
   return (
-    <aside className="filter-rail" style={{ background: 'var(--surface)', borderRadius: 22, padding: '10px 22px 22px' }}>
+    <aside className="filter-rail thin-scroll" style={{ background: 'var(--surface)', borderRadius: 22, padding: '10px 22px 22px' }}>
       {/* catalog-wide search */}
       <form onSubmit={submitSearch} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: '1px solid var(--line)', borderRadius: 12, height: 42, padding: '0 6px 0 12px', margin: '12px 0 4px' }}>
         <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Search all tools…" style={{ border: 0, background: 'transparent', height: '100%', flex: 1, fontSize: 13, minWidth: 0, outline: 'none' }} />
@@ -166,7 +218,7 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0 6px' }}>
         <span style={{ fontSize: 14, fontWeight: 600 }}>Filters</span>
-        {anyFilter && <span onClick={() => router.push(pathname)} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--muted-2)' }}>Clear all</span>}
+        {anyFilter && <span onClick={clearAll} style={{ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--muted-2)' }}>Clear all</span>}
       </div>
 
       {/* site-wide category nav — single-select, so these navigate directly
@@ -191,7 +243,7 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
             <div style={sectionStyle}>
               <DropHead title="Subcategory" value={activeSubName} open={subOpen} onClick={() => setSubOpen((v) => !v)} />
               {subOpen && (
-              <div className="thin-scroll" style={{ display: 'flex', flexDirection: 'column', maxHeight: subs.length > 9 ? 260 : undefined, overflowY: subs.length > 9 ? 'auto' : undefined, paddingRight: subs.length > 9 ? 6 : 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <Link href={`/category/${activeTop}`} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 4px', borderRadius: 8, fontSize: 13, fontWeight: onHub ? 600 : 400, color: onHub ? 'var(--green)' : 'var(--color-text)', textDecoration: 'none' }}>
                   <span style={radio(onHub)}>{onHub && <RadioDot />}</span>All {activeTopName}
                 </Link>
