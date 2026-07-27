@@ -70,18 +70,19 @@ html,body{overflow-x:hidden;overflow-y:visible;max-width:100%}
 .mainbar{display:flex;align-items:center;gap:28px}
 .mainbar-search{flex:1;max-width:640px}
 .section-h1{font-size:clamp(26px,4vw,32px)}
-.browse-layout{display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start}
+/* ScrollPane locks this row to the remaining viewport height (via JS) so the
+   filter and product columns scroll independently within it, instead of
+   sticky-positioning tricks that some browsers silently ignore. */
+.browse-layout{display:grid;grid-template-columns:260px 1fr;grid-template-rows:minmax(0,1fr);gap:28px;height:100%}
 .browse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;grid-auto-rows:1fr}
-/* Sticky positioning and internal scrolling are split across two elements —
-   some browsers (notably Safari/WebKit) silently drop position:sticky when
-   overflow is non-visible on that same element. */
-.filter-rail{position:sticky;top:70px}
-.filter-rail-scroll{max-height:calc(100vh - 86px);overflow-y:auto}
+.filter-rail{height:100%;min-height:0}
+.filter-rail-scroll{height:100%;overflow-y:auto}
+.browse-scroll{height:100%;min-height:0;overflow-y:auto}
 .noscroll::-webkit-scrollbar{display:none}
 .mobile-nav{display:none}
 @media (max-width:860px){ .mobile-nav{display:block} .desktop-nav{display:none} }
 /* prevent grid/flex blowout: let children shrink below content width */
-.cat-grid>*,.feat-grid>*,.vip-grid>*,.browse-grid>*,.foot-grid>*,.browse-layout>*{min-width:0}
+.cat-grid>*,.feat-grid>*,.vip-grid>*,.browse-grid>*,.foot-grid>*,.browse-layout>*{min-width:0;min-height:0}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
 .two-col>*{min-width:0}
 .spec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
@@ -103,9 +104,10 @@ html,body{overflow-x:hidden;overflow-y:visible;max-width:100%}
   .vip-grid{grid-template-columns:repeat(2,1fr)}
   .pad-lg{padding:22px}
   .pad-band{padding:26px}
-  .browse-layout{grid-template-columns:1fr}
-  .filter-rail{position:static}
-  .filter-rail-scroll{max-height:none;overflow-y:visible}
+  .browse-layout{grid-template-columns:1fr;height:auto}
+  .filter-rail{height:auto}
+  .filter-rail-scroll{height:auto;overflow-y:visible}
+  .browse-scroll{height:auto;overflow-y:visible}
   .mainbar{flex-wrap:wrap}
   .mainbar-search{order:3;flex:1 1 100%;max-width:none}
 }
