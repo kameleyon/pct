@@ -97,27 +97,30 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
     flutes: facets.flutes.map(String), geometry: facets.geometries, cut: facets.cuts,
     coating: facets.coatings, pt: facets.pointAngles, app: facets.applications, flat: facets.flats,
   };
+  // Scoped per top-level category (End Mills, Drills, ...) — so remembering
+  // and clearing filters in one category never touches another's.
+  const storageKey = `${FILTER_STORAGE_KEY}:${activeTop ?? 'root'}`;
 
   // Remember the user's facet choices for this session (sessionStorage, so it
-  // clears when the browser/tab session ends) so they carry over when
-  // browsing to a different category — but only re-apply values that are
-  // actually valid on the new category, and never override an explicit,
-  // already-filtered URL (e.g. a shared link).
+  // clears when the browser/tab session ends) so they carry over as you move
+  // between subcategories of the SAME top-level category — but only re-apply
+  // values that are actually valid on the new page, and never override an
+  // explicit, already-filtered URL (e.g. a shared link).
   useEffect(() => {
     const state: Record<string, string> = {};
     FILTER_KEYS.forEach((k) => {
       const v = params.get(k);
       if (v) state[k] = v;
     });
-    if (Object.keys(state).length > 0) sessionStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(state));
+    if (Object.keys(state).length > 0) sessionStorage.setItem(storageKey, JSON.stringify(state));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.toString()]);
+  }, [params.toString(), storageKey]);
 
   useEffect(() => {
     if (anyFilter) return;
     let saved: Record<string, string> | null = null;
     try {
-      const raw = sessionStorage.getItem(FILTER_STORAGE_KEY);
+      const raw = sessionStorage.getItem(storageKey);
       saved = raw ? JSON.parse(raw) : null;
     } catch {
       saved = null;
@@ -135,7 +138,7 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
     }
     if (changed) router.replace(`${pathname}?${next.toString()}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, storageKey]);
 
   // Facet sections collapse too, defaulting open only where a filter is
   // already applied — so a shared/bookmarked filtered link doesn't hide the
@@ -202,12 +205,13 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
   };
 
   const clearAll = () => {
-    sessionStorage.removeItem(FILTER_STORAGE_KEY);
+    sessionStorage.removeItem(storageKey);
     router.push(pathname);
   };
 
   return (
-    <aside className="filter-rail thin-scroll" style={{ background: 'var(--surface)', borderRadius: 22, padding: '10px 22px 22px' }}>
+    <aside className="filter-rail">
+    <div className="filter-rail-scroll thin-scroll" style={{ background: 'var(--surface)', borderRadius: 22, padding: '10px 22px 22px' }}>
       {/* catalog-wide search */}
       <form onSubmit={submitSearch} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: '1px solid var(--line)', borderRadius: 12, height: 42, padding: '0 6px 0 12px', margin: '12px 0 4px' }}>
         <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Search all tools…" style={{ border: 0, background: 'transparent', height: '100%', flex: 1, fontSize: 13, minWidth: 0, outline: 'none' }} />
@@ -281,6 +285,7 @@ export function FilterRail({ facets, catNav }: { facets: Facets; catNav?: CatNav
       <Chips title="Point Angle" param="pt" values={facets.pointAngles} />
       <List title="Application" param="app" values={facets.applications} />
       <Chips title="Shank Flat" param="flat" values={facets.flats} />
+    </div>
     </aside>
   );
 }
