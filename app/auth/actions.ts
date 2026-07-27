@@ -5,12 +5,32 @@ import { revalidatePath } from 'next/cache';
 
 export type ActionResult = { ok?: boolean; error?: string; needsVerify?: boolean; email?: string };
 
-export async function signUpAction(email: string, password: string, fullName: string): Promise<ActionResult> {
+export type SignUpProfile = {
+  phone?: string;
+  company?: string;
+  jobTitle?: string;
+  howHeard?: string;
+  marketingOptIn?: boolean;
+};
+
+export async function signUpAction(email: string, password: string, fullName: string, profile: SignUpProfile = {}): Promise<ActionResult> {
   const sb = await createSupabaseServer();
   const { data, error } = await sb.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName } },
+    // Everything here reaches handle_new_user() via raw_user_meta_data, so
+    // the profile row is fully populated in the same insert the trigger
+    // already does — no separate authenticated update needed pre-verification.
+    options: {
+      data: {
+        full_name: fullName,
+        phone: profile.phone ?? '',
+        company: profile.company ?? '',
+        job_title: profile.jobTitle ?? '',
+        how_heard: profile.howHeard ?? '',
+        marketing_opt_in: profile.marketingOptIn ?? false,
+      },
+    },
   });
   if (error) return { error: error.message };
   // If email confirmation is on, there is no session yet → verify with the emailed code.

@@ -21,7 +21,7 @@ export function Footer() {
           <div>
             <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: '#fff', marginBottom: 16 }}>Company</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-              {['About Us', 'VIP Benefits', 'Contact Us', 'Credit Application', 'Line Card'].map((l) => <Link key={l} href="#">{l}</Link>)}
+              {['About Us', 'Affiliate Program', 'Contact Us', 'Credit Application', 'Line Card'].map((l) => <Link key={l} href="#">{l}</Link>)}
             </div>
           </div>
           <div>

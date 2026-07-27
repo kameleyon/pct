@@ -19,6 +19,10 @@ export function AuthModal({ initial, onClose }: { initial: Step; onClose: () => 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [company, setCompany] = useState('');
+  const [howHeard, setHowHeard] = useState('');
+  const [marketingOptIn, setMarketingOptIn] = useState(true);
   const [code, setCode] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -61,6 +65,28 @@ export function AuthModal({ initial, onClose }: { initial: Step; onClose: () => 
               <input style={input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={step === 'signin' ? 'current-password' : 'new-password'} />
             </div>
           )}
+          {step === 'signup' && (
+            <>
+              <div><label style={label}>Phone</label><input style={input} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" /></div>
+              <div><label style={label}>Company <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(optional)</span></label><input style={input} value={company} onChange={(e) => setCompany(e.target.value)} autoComplete="organization" /></div>
+              <div>
+                <label style={label}>How did you hear about us? <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(optional)</span></label>
+                <select style={input} value={howHeard} onChange={(e) => setHowHeard(e.target.value)}>
+                  <option value="">Select one…</option>
+                  <option value="search">Search engine</option>
+                  <option value="referral">Referral from a colleague</option>
+                  <option value="social">Social media</option>
+                  <option value="trade_show">Trade show / event</option>
+                  <option value="existing_customer">Already a phone/in-store customer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, fontSize: 12.5, fontWeight: 600, color: '#4a473f', cursor: 'pointer' }}>
+                <input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} style={{ marginTop: 2 }} />
+                Email me about deals, new products, and restocks.
+              </label>
+            </>
+          )}
           {(step === 'verify' || step === 'reset') && (
             <>
               <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>Enter the 6-digit code we emailed to <b>{email}</b>.</p>
@@ -83,14 +109,14 @@ export function AuthModal({ initial, onClose }: { initial: Step; onClose: () => 
                 <span onClick={() => { setStep('forgot'); setErr(null); }} style={{ cursor: 'pointer', color: 'var(--color-accent)' }}>Forgot password?</span>
               </div>
               <div style={{ textAlign: 'center', margin: '6px 0', fontSize: 12, color: 'var(--muted-2)' }}>New to Precision CNC Tools?</div>
-              <button style={ghost} onClick={() => { setStep('signup'); setErr(null); }}>Create an account — join VIP free</button>
+              <button style={ghost} onClick={() => { setStep('signup'); setErr(null); }}>Create an account — it's free</button>
             </>
           )}
 
           {step === 'signup' && (
             <>
               <button disabled={pending} style={primary} onClick={() => run(async () => {
-                const r = await signUpAction(email, password, name);
+                const r = await signUpAction(email, password, name, { phone, company, howHeard, marketingOptIn });
                 if (r.error) setErr(r.error);
                 else if (r.needsVerify) { setStep('verify'); setMsg('Check your email for a 6-digit verification code.'); }
                 else done();
