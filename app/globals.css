@@ -135,3 +135,16 @@ html,body{overflow-x:hidden;overflow-y:visible;max-width:100%}
 .thin-scroll::-webkit-scrollbar-track{background:transparent}
 .thin-scroll::-webkit-scrollbar-thumb{background:rgba(43,42,38,.24);border-radius:3px}
 .thin-scroll::-webkit-scrollbar-thumb:hover{background:rgba(43,42,38,.4)}
+
+/* ---- Site-wide thin, custom scrollbars ---- */
+*{scrollbar-width:thin;scrollbar-color:rgba(43,42,38,.28) transparent}
+*::-webkit-scrollbar{width:7px;height:7px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:rgba(43,42,38,.26);border-radius:6px}
+*::-webkit-scrollbar-thumb:hover{background:rgba(43,42,38,.46)}
+
+/* Main page (window) scrollbar — hidden until you interact with the page */
+html{scrollbar-color:transparent transparent}
+html::-webkit-scrollbar-thumb{background:transparent}
+html:hover,html:focus-within{scrollbar-color:rgba(43,42,38,.3) transparent}
+html:hover::-webkit-scrollbar-thumb,html:active::-webkit-scrollbar-thumb{background:rgba(43,42,38,.3)}
