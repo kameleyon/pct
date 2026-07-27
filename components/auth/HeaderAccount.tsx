@@ -28,7 +28,7 @@ export function HeaderAccount({ session }: { session: Session }) {
     return (
       <>
         <span style={gold} onClick={() => auth.open('signup')}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 15 9l7 .6-5.3 4.6L18.5 21 12 17.3 5.5 21l1.8-6.8L2 9.6 9 9z" /></svg>VIP Program
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 15 9l7 .6-5.3 4.6L18.5 21 12 17.3 5.5 21l1.8-6.8L2 9.6 9 9z" /></svg>Affiliate Program
         </span>
         <span style={{ cursor: 'pointer' }} onClick={() => auth.open('signin')}>Sign In / Register</span>
       </>

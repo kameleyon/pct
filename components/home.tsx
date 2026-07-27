@@ -80,21 +80,21 @@ export function BrandsStrip() {
   );
 }
 
-export function VipBand() {
+export function AffiliateBand() {
   const tiers = [
-    { name: 'Bronze', pct: '1%', color: '#c17f4a', note: 'Automatic with every online account' },
-    { name: 'Silver', pct: '2%', color: '#c3c6c9', note: 'Unlocks VIP-only coupons' },
+    { name: 'Bronze', pct: '1%', color: '#c17f4a', note: 'Automatic with every approved affiliate account' },
+    { name: 'Silver', pct: '2%', color: '#c3c6c9', note: 'Unlocks affiliate-only coupons' },
     { name: 'Gold', pct: '4%', color: '#d4af37', note: 'Free shipping thresholds lowered' },
-    { name: 'Platinum', pct: '5%', color: '#e5e9ec', note: 'Top-tier pricing + shipping perks' },
+    { name: 'Platinum', pct: '5%', color: '#e5e9ec', note: 'Top-tier commission + shipping perks' },
   ];
   return (
     <section className="pad-band" style={{ background: '#103b24', borderRadius: 28, marginBottom: 48 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, marginBottom: 30 }}>
         <div>
-          <h2 style={{ fontSize: 38, margin: 0, color: '#fff' }}>PCT <span style={{ color: 'var(--color-gold-2)' }}>VIP</span> Program</h2>
-          <p style={{ fontSize: 16, color: 'rgba(255,255,255,.8)', margin: '12px 0 0', maxWidth: 520 }}>More savings, more rewards. VIP pricing and shipping perks scale with your rolling 12-month purchases — and it starts with every online account.</p>
+          <h2 style={{ fontSize: 38, margin: 0, color: '#fff' }}>PCT <span style={{ color: 'var(--color-gold-2)' }}>Affiliate</span> Program</h2>
+          <p style={{ fontSize: 16, color: 'rgba(255,255,255,.8)', margin: '12px 0 0', maxWidth: 520 }}>Earn commission on every sale you refer. Apply for free, get approved, and your rate scales with your rolling 12-month referred sales.</p>
         </div>
-        <button className="h-gold" style={{ height: 52, padding: '0 26px', fontSize: 14, fontWeight: 600, color: '#fff', background: 'var(--color-gold-2)', border: 0, borderRadius: 14, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>View VIP benefits<ArrowR w={2.4} s={16} /></button>
+        <button className="h-gold" style={{ height: 52, padding: '0 26px', fontSize: 14, fontWeight: 600, color: '#fff', background: 'var(--color-gold-2)', border: 0, borderRadius: 14, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>Apply now<ArrowR w={2.4} s={16} /></button>
       </div>
       <div className="vip-grid">
         {tiers.map((t) => (

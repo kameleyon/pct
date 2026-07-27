@@ -14,6 +14,8 @@ export function RoleSelect({ userId, role }: { userId: string; role: string }) {
       onChange={(e) => { const v = e.target.value; setValue(v); start(async () => { await setUserRoleAction(userId, v as any); router.refresh(); }); }}>
       <option value="member">Member</option>
       <option value="vip">VIP Member</option>
+      <option value="affiliate">Affiliate</option>
+      <option value="distributor">Distributor</option>
       <option value="admin">Admin</option>
     </select>
   );
