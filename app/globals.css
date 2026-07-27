@@ -148,3 +148,9 @@ html{scrollbar-color:transparent transparent}
 html::-webkit-scrollbar-thumb{background:transparent}
 html:hover,html:focus-within{scrollbar-color:rgba(43,42,38,.3) transparent}
 html:hover::-webkit-scrollbar-thumb,html:active::-webkit-scrollbar-thumb{background:rgba(43,42,38,.3)}
+
+/* Product pane scrollbar — visible only on demand (when hovering the pane) */
+.browse-scroll{scrollbar-color:transparent transparent}
+.browse-scroll::-webkit-scrollbar-thumb{background:transparent;transition:background .2s}
+.browse-scroll:hover{scrollbar-color:rgba(43,42,38,.3) transparent}
+.browse-scroll:hover::-webkit-scrollbar-thumb{background:rgba(43,42,38,.32)}
