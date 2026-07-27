@@ -72,7 +72,11 @@ html,body{overflow-x:hidden;overflow-y:visible;max-width:100%}
 .section-h1{font-size:clamp(26px,4vw,32px)}
 .browse-layout{display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start}
 .browse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;grid-auto-rows:1fr}
-.filter-rail{position:sticky;top:70px;max-height:calc(100vh - 86px);overflow-y:auto}
+/* Sticky positioning and internal scrolling are split across two elements —
+   some browsers (notably Safari/WebKit) silently drop position:sticky when
+   overflow is non-visible on that same element. */
+.filter-rail{position:sticky;top:70px}
+.filter-rail-scroll{max-height:calc(100vh - 86px);overflow-y:auto}
 .noscroll::-webkit-scrollbar{display:none}
 .mobile-nav{display:none}
 @media (max-width:860px){ .mobile-nav{display:block} .desktop-nav{display:none} }
@@ -100,7 +104,8 @@ html,body{overflow-x:hidden;overflow-y:visible;max-width:100%}
   .pad-lg{padding:22px}
   .pad-band{padding:26px}
   .browse-layout{grid-template-columns:1fr}
-  .filter-rail{position:static;max-height:none;overflow-y:visible}
+  .filter-rail{position:static}
+  .filter-rail-scroll{max-height:none;overflow-y:visible}
   .mainbar{flex-wrap:wrap}
   .mainbar-search{order:3;flex:1 1 100%;max-width:none}
 }
