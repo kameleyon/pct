@@ -51,6 +51,9 @@ export function HeaderAccount({ session }: { session: Session }) {
             <div style={{ fontWeight: 600, fontSize: 13 }}>{session.fullName || 'Member'}</div>
             <div style={{ fontSize: 11.5, color: 'var(--muted-2)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{session.email}</div>
           </div>
+          <MenuLink href="/account" label="My Account" onClick={() => setOpenMenu(false)} />
+          <MenuLink href="/account/orders" label="Order history" onClick={() => setOpenMenu(false)} />
+          <MenuLink href="/account/favorites" label="Saved tools" onClick={() => setOpenMenu(false)} />
           {session.role === 'admin' && <MenuLink href="/admin" label="Admin dashboard" onClick={() => setOpenMenu(false)} />}
           <MenuButton label="Change password" onClick={() => { setOpenMenu(false); auth.open('changepw'); }} />
           <MenuButton label="Log out" danger onClick={signOut} />

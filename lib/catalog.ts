@@ -196,6 +196,19 @@ export async function searchProducts(q: string, limit = 60): Promise<Product[]> 
   }
 }
 
+/** Fetch specific products by id, e.g. for a saved-favorites list. Order isn't
+ *  guaranteed to match `ids` — callers that care should re-sort client-side. */
+export async function getProductsByIds(ids: string[]): Promise<Product[]> {
+  if (!ids.length) return [];
+  const sb = getSupabase();
+  try {
+    const { data } = await sb.from('products').select(PRODUCT_COLS).in('id', ids);
+    return (data as Product[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 /** Full ancestry from the top-level category down to (and including) `id`. */
 export async function getCategoryPath(id: string): Promise<Category[]> {
   const path: Category[] = [];
