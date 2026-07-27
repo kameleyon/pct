@@ -4,6 +4,7 @@ import { getCategoryBySlug, getCategoryPath, getAllCategories, getChildCategorie
 import { ProductCard } from '@/components/ProductCard';
 import { CategoryCard } from '@/components/CategoryCard';
 import { FilterRail, SortSelect } from '@/components/browse';
+import { ScrollPane } from '@/components/ScrollPane';
 
 export const revalidate = 300;
 
@@ -93,30 +94,32 @@ export default async function CategoryPage({
         </div>
       </div>
 
-      <div className="browse-layout">
-        <FilterRail facets={facets} catNav={catNav} />
-        <div>
-          {children.length > 0 && (
-            <div className="cat-grid" style={{ marginBottom: 32 }}>
-              {children.map((c) => <CategoryCard key={c.slug} c={c} />)}
-            </div>
-          )}
-          {items.length === 0 ? (
-            <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 48, textAlign: 'center', color: 'var(--muted)' }}>No products match these filters.</div>
-          ) : (
-            <div className="browse-grid">
-              {items.map((p) => <ProductCard key={p.id} product={p} categorySlug={slugById[p.category_id] ?? slug} />)}
-            </div>
-          )}
-          {items.length < total && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 36 }}>
-              <Link href={`?${nextParams.toString()}`} scroll={false} className="btn-outline" style={{ height: 48, padding: '0 32px', display: 'inline-flex', alignItems: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text)', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 14 }}>
-                Load more tools
-              </Link>
-            </div>
-          )}
+      <ScrollPane>
+        <div className="browse-layout">
+          <FilterRail facets={facets} catNav={catNav} />
+          <div className="browse-scroll">
+            {children.length > 0 && (
+              <div className="cat-grid" style={{ marginBottom: 32 }}>
+                {children.map((c) => <CategoryCard key={c.slug} c={c} />)}
+              </div>
+            )}
+            {items.length === 0 ? (
+              <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 48, textAlign: 'center', color: 'var(--muted)' }}>No products match these filters.</div>
+            ) : (
+              <div className="browse-grid">
+                {items.map((p) => <ProductCard key={p.id} product={p} categorySlug={slugById[p.category_id] ?? slug} />)}
+              </div>
+            )}
+            {items.length < total && (
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '36px 0' }}>
+                <Link href={`?${nextParams.toString()}`} scroll={false} className="btn-outline" style={{ height: 48, padding: '0 32px', display: 'inline-flex', alignItems: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text)', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 14 }}>
+                  Load more tools
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </ScrollPane>
     </main>
   );
 }
