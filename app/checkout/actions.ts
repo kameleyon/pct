@@ -1,6 +1,6 @@
 'use server';
 
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getStripe } from '@/lib/stripe';
@@ -33,10 +33,23 @@ export async function createCheckoutSession(
 
   if (!items.length) return { error: 'None of your cart items have online pricing yet — use Request a Quote instead.' };
 
+  // Affiliate attribution: last click sets a 30-day cookie (see middleware.ts).
+  // Only trust it if it resolves to an approved affiliate who isn't buying via their own link.
+  let affiliateId: string | null = null;
+  let referralCode: string | null = null;
+  const refCode = (await cookies()).get('pct_ref')?.value;
+  if (refCode) {
+    const { data: aff } = await admin.from('affiliate_profiles').select('id,profile_id').eq('referral_code', refCode).eq('status', 'approved').maybeSingle();
+    if (aff && aff.profile_id !== user?.id) {
+      affiliateId = aff.id;
+      referralCode = refCode;
+    }
+  }
+
   const total = items.reduce((s, i) => s + i.unit * i.qty, 0);
   const { data: order, error: orderErr } = await admin
     .from('orders')
-    .insert({ profile_id: user?.id ?? null, status: 'pending', subtotal: total, tax: 0, shipping: 0, total, contact: user?.email ? { email: user.email } : {} })
+    .insert({ profile_id: user?.id ?? null, status: 'pending', subtotal: total, tax: 0, shipping: 0, total, contact: user?.email ? { email: user.email } : {}, referral_code: referralCode, affiliate_id: affiliateId })
     .select('id')
     .single();
   if (orderErr || !order) return { error: orderErr?.message ?? 'Could not create order.' };

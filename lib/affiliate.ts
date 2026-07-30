@@ -32,8 +32,8 @@ export type RateRow = { category_id: string | null; product_id: string | null; p
  *  product fixed $ > product % > category % > site-wide default %. */
 export function resolveAffiliateAmount(
   lineTotal: number,
-  productId: string,
-  categoryId: string,
+  productId: string | null,
+  categoryId: string | null,
   rates: RateRow[]
 ): number {
   const round2 = (n: number) => Math.round(n * 100) / 100;

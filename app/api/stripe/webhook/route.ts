@@ -1,5 +1,6 @@
 import { getStripe } from '@/lib/stripe';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { getAffiliateConfig, resolveAffiliateAmount, splitRemainder, type RateRow } from '@/lib/affiliate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,13 +31,77 @@ export async function POST(req: Request) {
       const email = session.customer_details?.email ?? undefined;
       await admin.from('orders').update({ status: 'paid', ...(email ? { contact: { email } } : {}) }).eq('id', orderId);
       // empty the buyer's cart now that the order is paid (members; guests clear locally on success)
-      const { data: order } = await admin.from('orders').select('profile_id').eq('id', orderId).single();
+      const { data: order } = await admin.from('orders').select('profile_id, subtotal, total, affiliate_id').eq('id', orderId).single();
       if (order?.profile_id) {
         const { data: cart } = await admin.from('carts').select('id').eq('profile_id', order.profile_id).maybeSingle();
         if (cart) await admin.from('cart_items').delete().eq('cart_id', cart.id);
+      }
+
+      if (order?.affiliate_id) {
+        await recordAffiliateCommission(admin, orderId, order.affiliate_id, Number(order.subtotal ?? order.total ?? 0));
       }
     }
   }
 
   return new Response('ok', { status: 200 });
+}
+
+/** Split a referred order's sale amount per line item (product $ > product % >
+ *  category % > default %), then split the remainder between MasterCut and the
+ *  website by the configured flat split. Idempotent against webhook retries via
+ *  the existing-check + affiliate_commissions.order_id unique constraint. */
+async function recordAffiliateCommission(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  orderId: string,
+  affiliateId: string,
+  saleAmount: number
+) {
+  const { data: existing } = await admin.from('affiliate_commissions').select('id').eq('order_id', orderId).maybeSingle();
+  if (existing) return;
+
+  const [{ data: items }, { data: rates }, cfg] = await Promise.all([
+    admin.from('order_items').select('product_id, unit_price, quantity').eq('order_id', orderId),
+    admin.from('affiliate_commission_rates').select('category_id,product_id,percent,fixed_amount'),
+    getAffiliateConfig(),
+  ]);
+
+  const productIds = (items ?? []).map((i) => i.product_id).filter((id): id is string => !!id);
+  const { data: products } = productIds.length
+    ? await admin.from('products').select('id,category_id').in('id', productIds)
+    : { data: [] as { id: string; category_id: string }[] };
+  const categoryByProduct = new Map((products ?? []).map((p) => [p.id, p.category_id]));
+
+  let affiliateAmount = 0;
+  for (const item of items ?? []) {
+    const lineTotal = Number(item.unit_price ?? 0) * item.quantity;
+    const categoryId = item.product_id ? categoryByProduct.get(item.product_id) ?? null : null;
+    affiliateAmount += resolveAffiliateAmount(lineTotal, item.product_id, categoryId, (rates ?? []) as RateRow[]);
+  }
+  affiliateAmount = Math.round(affiliateAmount * 100) / 100;
+
+  const remainder = Math.round((saleAmount - affiliateAmount) * 100) / 100;
+  const { manufacturerAmount, websiteAmount } = splitRemainder(remainder, cfg);
+
+  const maturesAt = new Date(Date.now() + cfg.maturityDays * 86400000);
+  const expiresAt = new Date(maturesAt.getTime() + cfg.expiryDays * 86400000);
+
+  const { data: commission, error } = await admin
+    .from('affiliate_commissions')
+    .insert({
+      affiliate_id: affiliateId,
+      order_id: orderId,
+      sale_amount: saleAmount,
+      affiliate_amount: affiliateAmount,
+      matures_at: maturesAt.toISOString(),
+      expires_at: expiresAt.toISOString(),
+    })
+    .select('id')
+    .single();
+  if (error || !commission) return; // unique-constraint race on retry — safe to drop
+
+  await admin.from('affiliate_commission_costs').insert({
+    commission_id: commission.id,
+    manufacturer_amount: manufacturerAmount,
+    website_amount: websiteAmount,
+  });
 }
