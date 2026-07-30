@@ -91,7 +91,7 @@ calc as (
 ),
 -- Deliberate cushion over the researched market anchors above (not a random
 -- fudge factor) so a still-placeholder price is never a money-losing one.
-margin as (select 1.15::numeric as buffer)
+margin as (select 1.10::numeric as buffer)
 update public.products pr
 set price = (
   round(
