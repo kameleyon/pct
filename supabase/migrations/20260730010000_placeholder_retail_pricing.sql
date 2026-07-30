@@ -33,6 +33,23 @@ with base_prices(slug, base) as (
     ('hp-mold-mills', 40), ('hp-twister-mills', 31), ('hp-hyper-mills', 27),
     ('hp-alumazips', 27),
 
+    -- Standard End Mills hub (square/ball/corner-radius/double-end/mini/taper/
+    -- short-flute/drill-mills; separate, simpler-named line from the HP family
+    -- above). base @ 1/4" dia; corner-radius checked directly against the same
+    -- real 3/8" AlTiN corner-radius anchor used for hp-v4-end-mills.
+    -- (6-flute-square-end-mills already has its own price formula from an
+    -- earlier migration and is skipped here via the price IS NULL guard.)
+    ('square-end-mills', 26), ('ball-end-mills', 26), ('corner-radius-end-mills', 28),
+    ('square-straight-flute-end-mills', 24), ('ball-straight-flute-end-mills', 24),
+    ('double-end-square-end-mills', 34), ('double-end-ball-end-mills', 34),
+    ('double-end-square-with-flat', 34), ('double-end-ball-with-flat', 34),
+    ('50-helix-corner-radius-end-mills', 34),
+    ('square-mini-mills', 26), ('ball-mini-mills', 26),
+    ('drill-mills', 32),
+    ('square-taper-mills', 34), ('ball-taper-mills', 34),
+    ('short-flute-square-end-mills', 32), ('short-flute-ball-end-mills', 32),
+    ('short-flute-corner-radius-end-mills', 33),
+
     -- Router bits (wood/plastic; 1-2 flute; base @ 1/4" dia).
     -- Downcut/upcut spiral checked directly against a real 1/2" downcut bit.
     ('r-v-flute-straight', 20), ('r-o-flute-straight', 19),
