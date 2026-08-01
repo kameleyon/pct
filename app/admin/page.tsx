@@ -4,6 +4,7 @@ import { createSupabaseServer } from '@/lib/supabase-server';
 import { getAllCategories } from '@/lib/catalog';
 import { RoleSelect, OrderStatus } from '@/components/admin/RoleSelect';
 import { AffiliateApplications, AffiliateRateSettings, AffiliateConfigForm } from '@/components/admin/AffiliateProgramAdmin';
+import { OrderNotificationSettings } from '@/components/admin/OrderNotificationSettings';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,13 +16,14 @@ export default async function AdminPage() {
   if (session.role !== 'admin') redirect('/');
 
   const sb = await createSupabaseServer();
-  const [{ data: users }, { data: orders }, { data: applicants }, { data: rates }, { data: config }, categories] = await Promise.all([
+  const [{ data: users }, { data: orders }, { data: applicants }, { data: rates }, { data: config }, categories, { data: notificationRecipients }] = await Promise.all([
     sb.from('profiles').select('id,full_name,role,created_at').order('created_at', { ascending: false }).limit(200),
     sb.from('orders').select('id,status,total,contact,created_at, items:order_items(id)').order('created_at', { ascending: false }).limit(100),
     sb.from('affiliate_profiles').select('id,status,referral_code,applied_at,profile_id').order('applied_at', { ascending: false }),
     sb.from('affiliate_commission_rates').select('id,category_id,product_id,percent,fixed_amount, product:products(part_number,name)'),
     sb.from('affiliate_config').select('*').eq('id', 1).single(),
     getAllCategories(),
+    sb.from('order_notification_recipients').select('id,email').order('created_at', { ascending: true }),
   ]);
 
   // affiliate_profiles.profile_id references auth.users, not public.profiles, so
@@ -100,6 +102,11 @@ export default async function AdminPage() {
       <section style={{ marginTop: 40, marginBottom: 40 }}>
         <h2 style={{ fontSize: 18, marginBottom: 12 }}>Affiliate program settings</h2>
         {config && <AffiliateConfigForm config={config} />}
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 18, marginBottom: 12 }}>Order notifications</h2>
+        <OrderNotificationSettings recipients={notificationRecipients ?? []} />
       </section>
     </main>
   );

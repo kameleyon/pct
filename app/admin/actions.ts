@@ -149,3 +149,29 @@ export async function updateAffiliateConfigAction(fields: {
   revalidatePath('/admin');
   return { ok: true };
 }
+
+/** Admin-only: add an order-notification recipient email. */
+export async function addOrderNotificationEmailAction(email: string): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+  const trimmed = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return { ok: false, error: 'Enter a valid email address.' };
+
+  const sb = await createSupabaseServer();
+  const { error } = await sb.from('order_notification_recipients').insert({ email: trimmed });
+  if (error) return { ok: false, error: error.message.includes('duplicate') ? 'That email is already on the list.' : error.message };
+  revalidatePath('/admin');
+  return { ok: true };
+}
+
+/** Admin-only: remove an order-notification recipient email. */
+export async function removeOrderNotificationEmailAction(id: string): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+
+  const sb = await createSupabaseServer();
+  const { error } = await sb.from('order_notification_recipients').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/admin');
+  return { ok: true };
+}
