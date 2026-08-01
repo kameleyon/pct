@@ -21,6 +21,13 @@ export async function middleware(request: NextRequest) {
     }
   );
   await supabase.auth.getUser();
+
+  // Affiliate referral attribution: last-click wins, 30-day window.
+  const ref = request.nextUrl.searchParams.get('ref');
+  if (ref) {
+    response.cookies.set('pct_ref', ref, { path: '/', maxAge: 60 * 60 * 24 * 30 });
+  }
+
   return response;
 }
 

@@ -47,6 +47,7 @@ export default async function AccountPage() {
         <AccountLinkCard href="/account/profile" title="Profile" desc="Contact info, company, shipping address, and email preferences." />
         <AccountLinkCard href="/account/orders" title="Order history" desc="Track quote requests, past orders, and order status." />
         <AccountLinkCard href="/account/favorites" title="Saved tools" desc="Products you've favorited while browsing the catalog." />
+        <AccountLinkCard href="/account/affiliate" title={session.role === 'affiliate' ? 'Affiliate portal' : 'Affiliate program'} desc="Get a referral link, track referred sales, and request payouts." />
       </div>
     </main>
   );

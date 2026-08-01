@@ -54,6 +54,7 @@ export function HeaderAccount({ session }: { session: Session }) {
           <MenuLink href="/account" label="My Account" onClick={() => setOpenMenu(false)} />
           <MenuLink href="/account/orders" label="Order history" onClick={() => setOpenMenu(false)} />
           <MenuLink href="/account/favorites" label="Saved tools" onClick={() => setOpenMenu(false)} />
+          <MenuLink href="/account/affiliate" label={session.role === 'affiliate' ? 'Affiliate portal' : 'Affiliate Program'} onClick={() => setOpenMenu(false)} />
           {session.role === 'admin' && <MenuLink href="/admin" label="Admin dashboard" onClick={() => setOpenMenu(false)} />}
           <MenuButton label="Change password" onClick={() => { setOpenMenu(false); auth.open('changepw'); }} />
           <MenuButton label="Log out" danger onClick={signOut} />
