@@ -116,7 +116,15 @@ set price = (
       calc.base
       * power(calc.dia / 0.25, 0.85)
       * (1 + (calc.flutes - 2) * 0.04)
-      * (case when calc.coating is distinct from 'Uncoated' then 1.25 else 1 end)
+      * (case coalesce(calc.coating, 'Uncoated')
+          when 'Uncoated' then 1.00
+          when 'PowerA'   then 1.25   -- AlTiN, general-purpose (validated vs a real AlTiN listing)
+          when 'PowerZ'   then 1.22   -- ZrN, aluminum-specific (AxMill line)
+          when 'PowerC'   then 1.25   -- standard-tier coating, same bracket as PowerA/PowerZ
+          when 'PowerN'   then 1.45   -- nACo nanocomposite, Pro+ Performance tier
+          when 'PowerNR'  then 1.55   -- nACRo nanocomposite, Ultra Performance / exotic-material tier
+          else 1.00
+        end)
       * (case calc.geometry when 'Ball' then 1.08 when 'Corner Radius' then 1.05 else 1 end)
       * (case when calc.is_extended then 1.10 else 1 end)
       * margin.buffer
