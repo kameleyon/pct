@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { getSupabaseAdmin } from './supabase-admin';
 
 let _resend: Resend | null = null;
 function getResend(): Resend {
@@ -23,12 +24,12 @@ export async function sendEmail(to: string | string[], subject: string, html: st
   }
 }
 
-/** Comma-separated ORDER_NOTIFICATION_EMAILS env var → clean address list. */
-export function getOrderNotificationRecipients(): string[] {
-  return (process.env.ORDER_NOTIFICATION_EMAILS ?? '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+/** Admin-managed recipient list (order_notification_recipients table) — editable
+ *  from /admin, no Vercel env var / redeploy needed to change it. */
+export async function getOrderNotificationRecipients(): Promise<string[]> {
+  const admin = getSupabaseAdmin();
+  const { data } = await admin.from('order_notification_recipients').select('email');
+  return (data ?? []).map((r) => r.email);
 }
 
 const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

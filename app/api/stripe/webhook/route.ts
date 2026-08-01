@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         if (cart) await admin.from('cart_items').delete().eq('cart_id', cart.id);
       }
 
-      const recipients = getOrderNotificationRecipients();
+      const recipients = await getOrderNotificationRecipients();
       if (recipients.length) {
         const { count } = await admin.from('order_items').select('id', { count: 'exact', head: true }).eq('order_id', orderId);
         await sendEmail(
