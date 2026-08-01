@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getProductByPart, getCategoryById, getCategoryPath, categoryImage, BRAND, type Product } from '@/lib/catalog';
-import { Heart, Coupon, Star, Cart, Truck, Shield, Check } from '@/components/icons';
+import { Heart, Coupon, Star, Truck, Shield, Check } from '@/components/icons';
 import { BulkPricing } from '@/components/BulkPricing';
+import { AddToCart } from '@/components/cart/AddToCart';
 
 export const revalidate = 300;
 
@@ -84,9 +85,14 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
 
           <BulkPricing price={product.sale_price ?? product.price} />
 
-          <div style={{ display: 'flex', gap: 12, marginBottom: 22 }}>
-            <input defaultValue="1" style={{ width: 64, height: 52, textAlign: 'center', fontWeight: 600, fontSize: 16, background: '#fff', border: '1px solid rgba(43,42,38,.12)', borderRadius: 14 }} />
-            <button className="btn-gold-solid" style={{ flex: 1, height: 52, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9, cursor: 'pointer', fontWeight: 600, fontSize: 15, color: '#fff', border: 0, borderRadius: 14 }}><Cart size={18} />Add to Quote</button>
+          <div style={{ marginBottom: 22 }}>
+            <AddToCart
+              productId={product.id}
+              partNumber={product.part_number}
+              name={product.name}
+              image={product.primary_image_url || categoryImage(category?.slug ?? '')}
+              price={product.sale_price ?? product.price}
+            />
           </div>
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>
             <span style={{ display: 'inline-flex', gap: 7, alignItems: 'center' }}><Truck size={15} color="var(--green)" />Fast UPS shipping</span>
