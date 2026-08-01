@@ -183,8 +183,8 @@ up — those columns are storage only right now.
 branches on `price_tier` (see §3).
 
 ### Placeholder retail pricing (`supabase/migrations/20260730010000_placeholder_retail_pricing.sql`)
-No real MasterCut cost sheet exists yet, so every product's `price` was populated by a
-formula, **only where `price IS NULL`** (safe to re-run; never overwrites a real price):
+No real MasterCut cost sheet exists yet, so every product's `price` is populated by a
+formula:
 
 ```
 price = clamp($14.99, $450,
@@ -192,12 +192,28 @@ price = clamp($14.99, $450,
             base(category)
             × (diameter / 0.25")^0.85
             × (1 + (flutes - 2) × 0.04)
-            × (coated ? 1.25 : 1)
+            × coating_multiplier(coating)   -- see table below
             × (geometry: Ball 1.08 | Corner Radius 1.05 | else 1)
             × (necked/reach/tapered ? 1.10 : 1)
             × 1.10   -- margin buffer, see below
           ))
 ```
+
+| Coating | Multiplier | Real-world basis |
+|---|---|---|
+| `Uncoated` | 1.00 | baseline |
+| `PowerZ` (ZrN) | 1.22 | aluminum-specific coating, AxMill line |
+| `PowerA` (AlTiN) | 1.25 | general-purpose coating; validated against a real AlTiN listing |
+| `PowerC` | 1.25 | grouped with the standard tier — MasterCut's own coating page 403'd every fetch attempt, so no independently verified premium exists for it |
+| `PowerN` (nACo) | 1.45 | nanocomposite, MasterCut's "Pro+ Performance" tier |
+| `PowerNR` (nACRo) | 1.55 | nanocomposite, MasterCut's "Ultra Performance" / exotic-material tier |
+
+**⚠️ This migration OVERRIDES every matched product's price on every run — there is no
+`price IS NULL` guard.** That's intentional (every current price is a placeholder and
+meant to be replaceable on demand), but it means **this migration must not be re-run
+after real MasterCut prices have been entered**, or it will silently overwrite them. A
+category not present in the base-price table is left alone entirely (shows "Request a
+Quote") rather than defaulting to something wrong — that part *is* safe indefinitely.
 
 - `base(category)` is a per-category-slug dollar figure, researched and tuned against
   ~10 real market anchors (see the migration file's comments for the specific
@@ -205,6 +221,11 @@ price = clamp($14.99, $450,
   drills, NC spotting drills, a 6-flute HP end mill, a downcut router bit). The rest of
   the ~95 category slugs were extrapolated from those anchors by relative positioning
   (finisher vs. rougher, HP vs. standard line, etc.), **not individually verified**.
+- **Material/metal type is not a pricing variable** — verified across the whole catalog
+  (not just End Mills) that `products.material` is hardcoded to `'Carbide'` by the
+  import pipeline for every product, no exceptions. Coating is the only real
+  metallurgical variable, hence the per-coating-type table above (previously this was a
+  flat +25% coated-vs-uncoated bump).
 - The **1.10× margin buffer** is deliberate, not a fudge factor — requested explicitly so
   that if this placeholder is still live when a real sale happens, the site isn't
   underpricing against whatever MasterCut actually charges. At this buffer level, most
@@ -214,11 +235,10 @@ price = clamp($14.99, $450,
   themselves marked-up retail prices, not cost.
 - Two separate End Mill category families exist with **different slug schemes** — the
   "High Performance End Mills" line (`hp-v4-end-mills`, etc.) and the plain "End Mills"
-  hub (`square-end-mills`, `corner-radius-end-mills`, etc., 19 sub-categories). Both are
-  covered in the base-price table; a category not present in that table is left
-  unpriced (shows "Request a Quote") rather than silently defaulting to something wrong.
-- `6-flute-square-end-mills` has its own earlier, separate pricing formula
-  (`20260726010000_sixflute_price_guest_checkout.sql`) and is untouched by this one.
+  hub (`square-end-mills`, `corner-radius-end-mills`, etc., 19 sub-categories, including
+  `6-flute-square-end-mills` — folded into this unified formula; it previously had its
+  own separate one-off formula in `20260726010000_sixflute_price_guest_checkout.sql`).
+  Both families are covered in the base-price table.
 
 **This is a placeholder.** Replace `products.price`/`sale_price` with real MasterCut cost
 data as soon as it exists; nothing else in the checkout/affiliate flow needs to change

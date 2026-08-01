@@ -16,12 +16,18 @@
 --  specifically so that if this placeholder is ever still live when a
 --  real sale happens, it undercuts nobody's actual MasterCut cost.
 --
---  All products are 'Carbide' today so material itself isn't a variable
---  within this catalog — diameter and length are the proxy for "amount
---  of material used."
+--  All products are 'Carbide' today, so "what metal is it made of" isn't a
+--  variable within this catalog (verified: the import pipeline hardcodes
+--  material = 'Carbide' for every product, no exceptions) — coating is the
+--  real metallurgical variable instead, priced per MasterCut's actual coating
+--  lineup (PowerA/PowerZ standard tier, PowerN/PowerNR premium nanocomposite
+--  tier), not just a binary coated/uncoated bump.
 --
---  Only fills rows where price IS NULL, so it's safe to re-run and will
---  never overwrite a real price once one is entered.
+--  IMPORTANT: this version recomputes and OVERRIDES every product's price on
+--  every run — there is no longer a `price IS NULL` guard. That's
+--  intentional (all current prices are placeholders and meant to be
+--  replaceable), but it means this migration must NOT be re-run once real
+--  MasterCut prices have been entered, or it will overwrite them.
 -- ============================================================
 
 with base_prices(slug, base) as (
@@ -37,9 +43,11 @@ with base_prices(slug, base) as (
     -- short-flute/drill-mills; separate, simpler-named line from the HP family
     -- above). base @ 1/4" dia; corner-radius checked directly against the same
     -- real 3/8" AlTiN corner-radius anchor used for hp-v4-end-mills.
-    -- (6-flute-square-end-mills already has its own price formula from an
-    -- earlier migration and is skipped here via the price IS NULL guard.)
+    -- 6-flute-square-end-mills previously had its own separate formula from
+    -- an earlier migration; folded into the unified one here so coating
+    -- pricing is consistent across the whole End Mills catalog.
     ('square-end-mills', 26), ('ball-end-mills', 26), ('corner-radius-end-mills', 28),
+    ('6-flute-square-end-mills', 30),
     ('square-straight-flute-end-mills', 24), ('ball-straight-flute-end-mills', 24),
     ('double-end-square-end-mills', 34), ('double-end-ball-end-mills', 34),
     ('double-end-square-with-flat', 34), ('double-end-ball-with-flat', 34),
@@ -104,7 +112,6 @@ calc as (
   from public.products p
   join public.categories c on c.id = p.category_id
   join base_prices bp on bp.slug = c.slug
-  where p.price is null
 ),
 -- Deliberate cushion over the researched market anchors above (not a random
 -- fudge factor) so a still-placeholder price is never a money-losing one.
