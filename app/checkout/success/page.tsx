@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ClearCartOnSuccess } from '@/components/cart/ClearCartOnSuccess';
+import { CART_STORAGE_KEY } from '@/components/cart/CartProvider';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,10 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
   const { order } = await searchParams;
   return (
     <main className="wrap" style={{ padding: '80px 24px', display: 'grid', placeItems: 'center' }}>
+      {/* Runs synchronously during HTML parsing, before React hydrates — guarantees
+          localStorage is empty before CartProvider's own hydration effect ever reads
+          it, regardless of client component mount/effect ordering. */}
+      <script dangerouslySetInnerHTML={{ __html: `try{localStorage.removeItem('${CART_STORAGE_KEY}')}catch(e){}` }} />
       <ClearCartOnSuccess />
       <div style={{ background: 'var(--color-surface)', borderRadius: 24, padding: '48px 40px', textAlign: 'center', maxWidth: 480 }}>
         <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-accent-100)', color: 'var(--color-accent)', display: 'grid', placeItems: 'center', margin: '0 auto 20px' }}>
