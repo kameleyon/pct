@@ -3,7 +3,8 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import type { CartLine } from '@/app/cart/actions';
 import { setCartItemAction, mergeCartAction } from '@/app/cart/actions';
 
-const KEY = 'pct_cart_v1';
+export const CART_STORAGE_KEY = 'pct_cart_v1';
+const KEY = CART_STORAGE_KEY;
 
 type CartCtx = {
   lines: CartLine[];
