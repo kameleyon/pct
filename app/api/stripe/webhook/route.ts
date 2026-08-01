@@ -2,6 +2,7 @@ import { getStripe } from '@/lib/stripe';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getAffiliateConfig, resolveAffiliateAmount, splitRemainder, type RateRow } from '@/lib/affiliate';
 import { sendEmail, getOrderNotificationRecipients, orderPlacedEmail, affiliateSaleEmail } from '@/lib/email';
+import { estimateDelivery, formatDeliveryWindow, formatAddress, type ShippingAddress } from '@/lib/shipping';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,12 +26,26 @@ export async function POST(req: Request) {
     const session = event.data.object as {
       metadata?: { orderId?: string };
       customer_details?: { email?: string | null } | null;
+      shipping_details?: { name?: string | null; address?: ShippingAddress | null } | null;
     };
     const orderId = session.metadata?.orderId;
     if (orderId) {
       const admin = getSupabaseAdmin();
       const email = session.customer_details?.email ?? undefined;
-      await admin.from('orders').update({ status: 'paid', ...(email ? { contact: { email } } : {}) }).eq('id', orderId);
+
+      const rawAddress = session.shipping_details?.address ?? null;
+      const shippingAddress: ShippingAddress | null = rawAddress
+        ? { ...rawAddress, name: session.shipping_details?.name ?? null }
+        : null;
+      const estimate = estimateDelivery(shippingAddress?.state, new Date());
+
+      await admin.from('orders').update({
+        status: 'paid',
+        ...(email ? { contact: { email } } : {}),
+        ...(shippingAddress ? { shipping_address: shippingAddress } : {}),
+        estimated_delivery_earliest: estimate.earliest.toISOString().slice(0, 10),
+        estimated_delivery_latest: estimate.latest.toISOString().slice(0, 10),
+      }).eq('id', orderId);
       // empty the buyer's cart now that the order is paid (members; guests clear locally on success)
       const { data: order } = await admin.from('orders').select('profile_id, subtotal, total, affiliate_id').eq('id', orderId).single();
       if (order?.profile_id) {
@@ -44,7 +59,14 @@ export async function POST(req: Request) {
         await sendEmail(
           recipients,
           `New order placed — ${orderId.slice(0, 8)}`,
-          orderPlacedEmail({ orderId, total: Number(order?.total ?? 0), email: email ?? null, itemCount: count ?? 0 })
+          orderPlacedEmail({
+            orderId,
+            total: Number(order?.total ?? 0),
+            email: email ?? null,
+            itemCount: count ?? 0,
+            shippingAddress: formatAddress(shippingAddress),
+            deliveryWindow: formatDeliveryWindow(estimate),
+          })
         );
       }
 

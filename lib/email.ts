@@ -34,6 +34,10 @@ export async function getOrderNotificationRecipients(): Promise<string[]> {
 
 const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+// Order/shipping data below originates from Stripe/customer input, not our own
+// code, so escape it before interpolating into email HTML.
+const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
 const wrap = (title: string, body: string) => `
   <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#2B2A26">
     <h2 style="color:#1a5c34;margin:0 0 16px">${title}</h2>
@@ -53,14 +57,19 @@ export function affiliateSaleEmail(opts: { saleAmount: number; affiliateAmount: 
   );
 }
 
-export function orderPlacedEmail(opts: { orderId: string; total: number; email: string | null; itemCount: number }) {
+export function orderPlacedEmail(opts: {
+  orderId: string; total: number; email: string | null; itemCount: number;
+  shippingAddress?: string | null; deliveryWindow?: string | null;
+}) {
   return wrap(
     'New order placed',
     `<table style="width:100%;border-collapse:collapse;margin:16px 0">
        <tr><td style="padding:6px 0;color:#6b6a63">Order</td><td style="padding:6px 0;text-align:right;font-family:monospace">${opts.orderId.slice(0, 8)}…</td></tr>
-       <tr><td style="padding:6px 0;color:#6b6a63">Customer</td><td style="padding:6px 0;text-align:right">${opts.email ?? '—'}</td></tr>
+       <tr><td style="padding:6px 0;color:#6b6a63">Customer</td><td style="padding:6px 0;text-align:right">${opts.email ? escapeHtml(opts.email) : '—'}</td></tr>
        <tr><td style="padding:6px 0;color:#6b6a63">Items</td><td style="padding:6px 0;text-align:right">${opts.itemCount}</td></tr>
        <tr><td style="padding:6px 0;color:#6b6a63">Total</td><td style="padding:6px 0;text-align:right;font-weight:600">${money(opts.total)}</td></tr>
-     </table>`
+       ${opts.deliveryWindow ? `<tr><td style="padding:6px 0;color:#6b6a63">Est. delivery</td><td style="padding:6px 0;text-align:right">${escapeHtml(opts.deliveryWindow)}</td></tr>` : ''}
+     </table>
+     ${opts.shippingAddress ? `<div style="margin-top:8px"><div style="color:#6b6a63;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Ship to</div><div style="white-space:pre-line;font-size:13.5px">${escapeHtml(opts.shippingAddress)}</div></div>` : ''}`
   );
 }
