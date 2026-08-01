@@ -1,6 +1,7 @@
 import { getStripe } from '@/lib/stripe';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getAffiliateConfig, resolveAffiliateAmount, splitRemainder, type RateRow } from '@/lib/affiliate';
+import { sendEmail, getOrderNotificationRecipients, orderPlacedEmail, affiliateSaleEmail } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,6 +36,16 @@ export async function POST(req: Request) {
       if (order?.profile_id) {
         const { data: cart } = await admin.from('carts').select('id').eq('profile_id', order.profile_id).maybeSingle();
         if (cart) await admin.from('cart_items').delete().eq('cart_id', cart.id);
+      }
+
+      const recipients = getOrderNotificationRecipients();
+      if (recipients.length) {
+        const { count } = await admin.from('order_items').select('id', { count: 'exact', head: true }).eq('order_id', orderId);
+        await sendEmail(
+          recipients,
+          `New order placed — ${orderId.slice(0, 8)}`,
+          orderPlacedEmail({ orderId, total: Number(order?.total ?? 0), email: email ?? null, itemCount: count ?? 0 })
+        );
       }
 
       if (order?.affiliate_id) {
@@ -104,4 +115,16 @@ async function recordAffiliateCommission(
     manufacturer_amount: manufacturerAmount,
     website_amount: websiteAmount,
   });
+
+  const { data: ap } = await admin.from('affiliate_profiles').select('profile_id').eq('id', affiliateId).maybeSingle();
+  if (ap?.profile_id) {
+    const { data: userData } = await admin.auth.admin.getUserById(ap.profile_id);
+    if (userData?.user?.email) {
+      await sendEmail(
+        userData.user.email,
+        'You just earned a commission',
+        affiliateSaleEmail({ saleAmount, affiliateAmount, maturesAt })
+      );
+    }
+  }
 }
