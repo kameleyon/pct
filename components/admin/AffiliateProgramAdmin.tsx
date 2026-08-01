@@ -1,6 +1,7 @@
 'use client';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   setAffiliateStatusAction,
   setDefaultAffiliateRateAction,
@@ -40,17 +41,20 @@ export function AffiliateApplications({ applicants }: { applicants: Applicant[] 
         <tbody>
           {applicants.map((a) => (
             <tr key={a.id}>
-              <td style={td}>{a.full_name || <span style={{ color: 'var(--muted-2)' }}>—</span>}</td>
+              <td style={td}><Link href={`/admin/affiliates/${a.id}`} style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{a.full_name || 'Unnamed'}</Link></td>
               <td style={{ ...td, fontFamily: 'monospace' }}>{a.referral_code}</td>
               <td style={td}>{new Date(a.applied_at).toLocaleDateString()}</td>
               <td style={{ ...td, textTransform: 'capitalize' }}>{a.status}</td>
               <td style={td}>
-                {a.status === 'pending' && (
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button disabled={pending && busyId === a.id} onClick={() => act(a.id, 'approved')} style={{ ...btn, background: 'var(--color-accent)', color: '#fff' }}>Approve</button>
-                    <button disabled={pending && busyId === a.id} onClick={() => act(a.id, 'rejected')} style={{ ...btn, background: '#fbecea', color: '#b23b2e' }}>Reject</button>
-                  </div>
-                )}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Link href={`/admin/affiliates/${a.id}`} style={{ ...btn, display: 'inline-flex', alignItems: 'center', background: '#f4f1ea', color: 'var(--color-text)', textDecoration: 'none' }}>View</Link>
+                  {a.status === 'pending' && (
+                    <>
+                      <button disabled={pending && busyId === a.id} onClick={() => act(a.id, 'approved')} style={{ ...btn, background: 'var(--color-accent)', color: '#fff' }}>Approve</button>
+                      <button disabled={pending && busyId === a.id} onClick={() => act(a.id, 'rejected')} style={{ ...btn, background: '#fbecea', color: '#b23b2e' }}>Reject</button>
+                    </>
+                  )}
+                </div>
               </td>
             </tr>
           ))}
