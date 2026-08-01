@@ -12,7 +12,7 @@ export function Hero({ count }: { count: string }) {
     <section className="hero-a" style={{ background: 'var(--color-surface)', borderRadius: 28 }}>
       <div className="hero-left" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--color-gold-700)', background: 'var(--color-gold-100)', padding: '7px 14px', borderRadius: 999, marginBottom: 24 }}>Mastercut precision cutting tools · factory direct</div>
-        <h1 style={{ lineHeight: 1.0, letterSpacing: '-.02em', margin: '0 0 20px', color: 'var(--color-text)' }}>The right tool<br />for a <span style={{ color: 'var(--color-accent)' }}>high precision</span> job.</h1>
+        <h1 style={{ lineHeight: 1.0, letterSpacing: '-.02em', margin: '0 0 20px', color: 'var(--color-text)' }}>American-Made.<br />Built for <span style={{ color: 'var(--color-accent)' }}>Precision</span>.</h1>
         <p style={{ fontSize: 17, lineHeight: 1.55, color: 'var(--muted)', maxWidth: 460, margin: '0 0 30px' }}>{count || 'Thousands of'} Mastercut cutting tools and industrial supplies — always in stock, factory direct.</p>
         <div className="hero-stats" style={{ background: 'var(--color-surface-2)', borderRadius: 18, padding: '20px 4px' }}>
           {[[count || '8,600+', 'In stock'], ['Mastercut', 'Trusted brand'], ['Made in USA', 'Solid carbide']].map(([a, b], i) => (
