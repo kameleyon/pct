@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { createSupabaseServer } from '@/lib/supabase-server';
+import { formatAddress, type ShippingAddress } from '@/lib/shipping';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,10 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 type OrderItem = { id: string; part_number: string; name: string; unit_price: number | null; quantity: number };
-type Order = { id: string; status: string; total: number | null; created_at: string; items: OrderItem[] };
+type Order = {
+  id: string; status: string; total: number | null; created_at: string; items: OrderItem[];
+  shipping_address: ShippingAddress | null; estimated_delivery_earliest: string | null; estimated_delivery_latest: string | null;
+};
 
 export default async function OrdersPage() {
   const session = await getSession();
@@ -22,7 +26,7 @@ export default async function OrdersPage() {
   const sb = await createSupabaseServer();
   const { data: orders } = await sb
     .from('orders')
-    .select('id,status,total,created_at,items:order_items(id,part_number,name,unit_price,quantity)')
+    .select('id,status,total,created_at,shipping_address,estimated_delivery_earliest,estimated_delivery_latest,items:order_items(id,part_number,name,unit_price,quantity)')
     .eq('profile_id', session.userId as string)
     .order('created_at', { ascending: false });
 
@@ -73,6 +77,26 @@ export default async function OrdersPage() {
                   </div>
                 ))}
               </div>
+              {(o.shipping_address || (o.estimated_delivery_earliest && o.estimated_delivery_latest)) && (
+                <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', padding: '14px 20px', borderTop: '1px solid rgba(43,42,38,.07)', background: 'var(--color-surface-2)' }}>
+                  {o.shipping_address && (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 4 }}>Shipping to</div>
+                      <div style={{ whiteSpace: 'pre-line', fontSize: 13 }}>{formatAddress(o.shipping_address)}</div>
+                    </div>
+                  )}
+                  {o.estimated_delivery_earliest && o.estimated_delivery_latest && (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 4 }}>Estimated arrival</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-accent)' }}>
+                        {new Date(o.estimated_delivery_earliest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}
+                        {' – '}
+                        {new Date(o.estimated_delivery_latest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
