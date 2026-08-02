@@ -4,19 +4,43 @@ import { headers, cookies } from 'next/headers';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getStripe } from '@/lib/stripe';
+import { estimateDelivery } from '@/lib/shipping';
+
+export type CheckoutContact = {
+  fullName: string;
+  email: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+};
 
 /**
  * Build a Stripe Checkout Session from cart lines. The client sends only
  * product ids + quantities; prices are looked up authoritatively from the DB
  * (never trusted from the browser). Items without a price are dropped.
+ *
+ * Contact/shipping details are collected on our own /checkout page (not
+ * Stripe's hosted page) and stored on the order immediately — Stripe only
+ * handles payment + the card's billing address (for AVS), not shipping.
  */
 export async function createCheckoutSession(
-  lines: { productId: string; qty: number }[]
+  lines: { productId: string; qty: number }[],
+  contact: CheckoutContact
 ): Promise<{ url?: string; error?: string }> {
   try {
   const sb = await createSupabaseServer();
   const { data: { user } } = await sb.auth.getUser(); // may be null — guest checkout allowed
   if (!lines?.length) return { error: 'Your cart is empty.' };
+
+  const required: (keyof CheckoutContact)[] = ['fullName', 'email', 'phone', 'addressLine1', 'city', 'state', 'postalCode'];
+  for (const key of required) {
+    if (!contact[key]?.trim()) return { error: 'Please fill in all required shipping and contact fields.' };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim())) return { error: 'Enter a valid email address.' };
 
   const admin = getSupabaseAdmin();
   const ids = lines.map((l) => l.productId);
@@ -46,10 +70,31 @@ export async function createCheckoutSession(
     }
   }
 
+  const shippingAddress = {
+    name: contact.fullName.trim(),
+    line1: contact.addressLine1.trim(),
+    line2: contact.addressLine2.trim() || null,
+    city: contact.city.trim(),
+    state: contact.state.trim().toUpperCase(),
+    postal_code: contact.postalCode.trim(),
+    country: contact.country.trim() || 'US',
+  };
+  const estimate = estimateDelivery(shippingAddress.state, new Date());
+
   const total = items.reduce((s, i) => s + i.unit * i.qty, 0);
   const { data: order, error: orderErr } = await admin
     .from('orders')
-    .insert({ profile_id: user?.id ?? null, status: 'pending', subtotal: total, tax: 0, shipping: 0, total, contact: user?.email ? { email: user.email } : {}, referral_code: referralCode, affiliate_id: affiliateId })
+    .insert({
+      profile_id: user?.id ?? null,
+      status: 'pending',
+      subtotal: total, tax: 0, shipping: 0, total,
+      contact: { name: contact.fullName.trim(), email: contact.email.trim(), phone: contact.phone.trim() },
+      shipping_address: shippingAddress,
+      estimated_delivery_earliest: estimate.earliest.toISOString().slice(0, 10),
+      estimated_delivery_latest: estimate.latest.toISOString().slice(0, 10),
+      referral_code: referralCode,
+      affiliate_id: affiliateId,
+    })
     .select('id')
     .single();
   if (orderErr || !order) return { error: orderErr?.message ?? 'Could not create order.' };
@@ -63,9 +108,7 @@ export async function createCheckoutSession(
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
-    customer_email: user?.email ?? undefined, // guests: Stripe collects the email on its page
-    shipping_address_collection: { allowed_countries: ['US'] },
-    phone_number_collection: { enabled: true },
+    customer_email: contact.email.trim(), // pre-filled — Stripe's hosted page still shows this field, but it's not our source of truth
     line_items: items.map((i) => ({
       quantity: i.qty,
       price_data: {
@@ -75,7 +118,7 @@ export async function createCheckoutSession(
       },
     })),
     success_url: `${origin}/checkout/success?order=${order.id}`,
-    cancel_url: `${origin}/`,
+    cancel_url: `${origin}/checkout`,
     metadata: { orderId: order.id },
   });
 

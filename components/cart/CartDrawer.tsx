@@ -1,8 +1,8 @@
 'use client';
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCart } from './CartProvider';
 import { requestQuoteAction } from '@/app/cart/actions';
-import { createCheckoutSession } from '@/app/checkout/actions';
 import { useAuthModal } from '@/components/auth/AuthProvider';
 
 const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -10,8 +10,8 @@ const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDi
 export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
   const { lines, count, open, setOpen, setQty, remove, clear } = useCart();
   const auth = useAuthModal();
+  const router = useRouter();
   const [pending, start] = useTransition();
-  const [checkingOut, setCheckingOut] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -29,16 +29,11 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
     });
   };
 
-  const checkout = () => {
-    // Guest checkout allowed — no sign-in required.
-    setErr(null);
-    setCheckingOut(true);
-    createCheckoutSession(lines.map((l) => ({ productId: l.productId, qty: l.qty })))
-      .then((r) => {
-        if (r.url) window.location.href = r.url;
-        else { setErr(r.error ?? 'Checkout failed.'); setCheckingOut(false); }
-      })
-      .catch(() => { setErr('Checkout could not start. Please try again.'); setCheckingOut(false); });
+  // Guest checkout allowed — no sign-in required. Contact/shipping details
+  // are collected on our own /checkout page, not Stripe's hosted page.
+  const goToCheckout = () => {
+    setOpen(false);
+    router.push('/checkout');
   };
 
   return (
@@ -98,8 +93,8 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
                   <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>Subtotal (online items)</span>
                   <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text)' }}>{money(subtotal)}</span>
                 </div>
-                <button onClick={checkout} disabled={checkingOut} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
-                  {checkingOut ? 'Redirecting…' : 'Buy Now — Secure Checkout'}
+                <button onClick={goToCheckout} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+                  Continue to Checkout
                 </button>
                 <button onClick={submitQuote} disabled={pending} style={{ width: '100%', height: 42, borderRadius: 12, background: 'transparent', color: 'var(--color-accent)', border: '1px solid rgba(43,42,38,.14)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', marginTop: 8 }}>
                   {pending ? 'Submitting…' : 'Request a quote instead'}

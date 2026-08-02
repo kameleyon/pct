@@ -103,20 +103,25 @@ service-role client from the webhook or a verified server action — there is no
 
 ## 4. Checkout & payment flow
 
-1. **Cart → `createCheckoutSession`** (`app/checkout/actions.ts`): looks up authoritative
+1. **Cart drawer → `/checkout`** (`app/checkout/page.tsx` + `components/checkout/CheckoutForm.tsx`):
+   our own page collects full name, email, phone, and shipping address (prefilled from
+   `profiles` for signed-in users). This is deliberately **not** Stripe's job — Stripe's
+   hosted Checkout page only handles card entry + the card's own billing address (for AVS
+   fraud checks), never shipping/contact info.
+2. **Submit → `createCheckoutSession`** (`app/checkout/actions.ts`): looks up authoritative
    prices server-side (never trusts the browser), reads the `pct_ref` cookie and resolves
-   it to an *approved* affiliate profile (rejecting self-referrals), creates the `orders`
-   + `order_items` rows (`status: 'pending'`), then creates a Stripe Checkout Session with
-   `metadata.orderId` and `shipping_address_collection` (US only) so Stripe collects the
-   delivery address on its own hosted page.
-2. **Stripe → webhook** (`app/api/stripe/webhook/route.ts`), on
+   it to an *approved* affiliate profile (rejecting self-referrals), computes the delivery
+   estimate (`lib/shipping.ts` — a static FL-origin ground-shipping zone table + a fixed
+   24h processing buffer, no live carrier API), and creates the `orders` + `order_items`
+   rows — `contact`, `shipping_address`, and `estimated_delivery_earliest/latest` are all
+   set **at this point**, not waiting on Stripe. Then creates a Stripe Checkout Session
+   with `metadata.orderId` and `customer_email` pre-filled.
+3. **Stripe → webhook** (`app/api/stripe/webhook/route.ts`), on
    `checkout.session.completed`:
-   - Marks the order `paid`, clears the buyer's server-side cart.
-   - Captures `session.shipping_details` onto `orders.shipping_address` (jsonb), and
-     computes a delivery-window estimate (`lib/shipping.ts`) from a static FL-origin
-     ground-shipping zone table + a fixed 24h processing buffer — no live carrier API.
-     Stored once, snapshotted, on `orders.estimated_delivery_earliest/latest`. Shown on
-     the checkout success page, `/account/orders`, and included in the admin
+   - Marks the order `paid`, clears the buyer's server-side cart. Contact/shipping/estimate
+     are read back from the order row (already set in step 2), not re-derived from the
+     Stripe session — the webhook no longer parses `customer_details`/`shipping_details`.
+     Shown on the checkout success page, `/account/orders`, and included in the admin
      order-placed email (for fulfillment).
    - If the order carries an `affiliate_id`, computes and records the commission (§5) —
      idempotent against webhook retries via an existing-row check plus a unique

@@ -2,7 +2,7 @@ import { getStripe } from '@/lib/stripe';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getAffiliateConfig, resolveAffiliateAmount, splitRemainder, type RateRow } from '@/lib/affiliate';
 import { sendEmail, getOrderNotificationRecipients, orderPlacedEmail, affiliateSaleEmail } from '@/lib/email';
-import { estimateDelivery, formatDeliveryWindow, formatAddress, type ShippingAddress } from '@/lib/shipping';
+import { formatAddress, formatDeliveryWindowFromDates, type ShippingAddress } from '@/lib/shipping';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,34 +23,20 @@ export async function POST(req: Request) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as {
-      metadata?: { orderId?: string };
-      customer_details?: { email?: string | null; phone?: string | null; name?: string | null } | null;
-      shipping_details?: { name?: string | null; address?: ShippingAddress | null } | null;
-    };
+    const session = event.data.object as { metadata?: { orderId?: string } };
     const orderId = session.metadata?.orderId;
     if (orderId) {
       const admin = getSupabaseAdmin();
-      const email = session.customer_details?.email ?? null;
-      const phone = session.customer_details?.phone ?? null;
-      const name = session.customer_details?.name ?? session.shipping_details?.name ?? null;
-      const contact = { ...(email ? { email } : {}), ...(phone ? { phone } : {}), ...(name ? { name } : {}) };
-
-      const rawAddress = session.shipping_details?.address ?? null;
-      const shippingAddress: ShippingAddress | null = rawAddress
-        ? { ...rawAddress, name: session.shipping_details?.name ?? null }
-        : null;
-      const estimate = estimateDelivery(shippingAddress?.state, new Date());
-
-      await admin.from('orders').update({
-        status: 'paid',
-        ...(Object.keys(contact).length ? { contact } : {}),
-        ...(shippingAddress ? { shipping_address: shippingAddress } : {}),
-        estimated_delivery_earliest: estimate.earliest.toISOString().slice(0, 10),
-        estimated_delivery_latest: estimate.latest.toISOString().slice(0, 10),
-      }).eq('id', orderId);
+      // Contact/shipping/delivery-estimate were already captured on our own
+      // /checkout page and stored at order-creation time — Stripe only
+      // handled payment, so there's nothing to pull from the session here.
+      await admin.from('orders').update({ status: 'paid' }).eq('id', orderId);
+      const { data: order } = await admin
+        .from('orders')
+        .select('profile_id, subtotal, total, affiliate_id, contact, shipping_address, estimated_delivery_earliest, estimated_delivery_latest')
+        .eq('id', orderId)
+        .single();
       // empty the buyer's cart now that the order is paid (members; guests clear locally on success)
-      const { data: order } = await admin.from('orders').select('profile_id, subtotal, total, affiliate_id').eq('id', orderId).single();
       if (order?.profile_id) {
         const { data: cart } = await admin.from('carts').select('id').eq('profile_id', order.profile_id).maybeSingle();
         if (cart) await admin.from('cart_items').delete().eq('cart_id', cart.id);
@@ -65,10 +51,12 @@ export async function POST(req: Request) {
           orderPlacedEmail({
             orderId,
             total: Number(order?.total ?? 0),
-            email: email ?? null,
+            email: (order?.contact as { email?: string } | null)?.email ?? null,
             itemCount: count ?? 0,
-            shippingAddress: formatAddress(shippingAddress),
-            deliveryWindow: formatDeliveryWindow(estimate),
+            shippingAddress: formatAddress(order?.shipping_address as ShippingAddress | null),
+            deliveryWindow: order?.estimated_delivery_earliest && order?.estimated_delivery_latest
+              ? formatDeliveryWindowFromDates(order.estimated_delivery_earliest, order.estimated_delivery_latest)
+              : null,
           })
         );
       }

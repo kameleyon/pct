@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ClearCartOnSuccess } from '@/components/cart/ClearCartOnSuccess';
 import { CART_STORAGE_KEY } from '@/components/cart/CartProvider';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import { formatAddress, type ShippingAddress } from '@/lib/shipping';
+import { formatAddress, formatDeliveryWindowFromDates, type ShippingAddress } from '@/lib/shipping';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,9 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
 
   // Guests have no session for RLS to scope to, so this reads via the
   // service-role client — read-only confirmation info tied to an order id
-  // the visitor was just redirected to by Stripe.
+  // the visitor was just redirected to by Stripe. Contact/shipping/estimate
+  // are set at order-creation time now (our own /checkout page), so this
+  // should always be present by the time payment redirects back here.
   let shippingAddress: string | null = null;
   let deliveryWindow: string | null = null;
   if (order) {
@@ -22,10 +24,7 @@ export default async function CheckoutSuccess({ searchParams }: { searchParams: 
       .maybeSingle();
     if (row?.shipping_address) shippingAddress = formatAddress(row.shipping_address as ShippingAddress);
     if (row?.estimated_delivery_earliest && row?.estimated_delivery_latest) {
-      const opts: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' };
-      const earliest = new Date(row.estimated_delivery_earliest).toLocaleDateString('en-US', opts);
-      const latest = new Date(row.estimated_delivery_latest).toLocaleDateString('en-US', opts);
-      deliveryWindow = `${earliest} – ${latest}`;
+      deliveryWindow = formatDeliveryWindowFromDates(row.estimated_delivery_earliest, row.estimated_delivery_latest);
     }
   }
 

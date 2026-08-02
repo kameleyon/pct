@@ -35,6 +35,13 @@ export function formatDeliveryWindow(estimate: DeliveryEstimate): string {
   return `${estimate.earliest.toLocaleDateString('en-US', opts)} – ${estimate.latest.toLocaleDateString('en-US', opts)}`;
 }
 
+/** Same formatting, but from the plain ISO date strings stored on an order
+ *  row (estimated_delivery_earliest/latest) instead of a fresh DeliveryEstimate. */
+export function formatDeliveryWindowFromDates(earliest: string, latest: string): string {
+  const opts: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' };
+  return `${new Date(earliest).toLocaleDateString('en-US', opts)} – ${new Date(latest).toLocaleDateString('en-US', opts)}`;
+}
+
 export type ShippingAddress = {
   name?: string | null;
   line1?: string | null;
