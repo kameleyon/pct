@@ -13,6 +13,7 @@ import {
 } from '@/app/admin/actions';
 
 const th: React.CSSProperties = { textAlign: 'left', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.05em', color: 'var(--muted-2)', padding: '10px 12px', fontWeight: 700 };
+const thSticky: React.CSSProperties = { ...th, position: 'sticky', top: 0, background: 'var(--color-surface)' };
 const td: React.CSSProperties = { padding: '12px', fontSize: 13.5, borderTop: '1px solid rgba(43,42,38,.07)', verticalAlign: 'middle' };
 const btn: React.CSSProperties = { height: 34, padding: '0 14px', borderRadius: 9, border: 0, fontWeight: 600, fontSize: 12.5, cursor: 'pointer' };
 const num: React.CSSProperties = { width: 90, height: 34, borderRadius: 9, border: '1px solid rgba(43,42,38,.16)', padding: '0 10px', fontSize: 13 };
@@ -35,9 +36,9 @@ export function AffiliateApplications({ applicants }: { applicants: Applicant[] 
   };
 
   return (
-    <div style={{ ...box, padding: 0, overflow: 'auto' }}>
+    <div style={{ ...box, padding: 0, overflow: 'auto', maxHeight: 420 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
-        <thead><tr><th style={th}>Name</th><th style={th}>Code</th><th style={th}>Applied</th><th style={th}>Status</th><th style={th}></th></tr></thead>
+        <thead><tr><th style={thSticky}>Name</th><th style={thSticky}>Code</th><th style={thSticky}>Applied</th><th style={thSticky}>Status</th><th style={thSticky}></th></tr></thead>
         <tbody>
           {applicants.map((a) => (
             <tr key={a.id}>
@@ -109,19 +110,21 @@ export function AffiliateRateSettings({ defaultPercent, categories, categoryRate
           <span style={{ fontSize: 13 }}>%</span>
           <button disabled={pending || !catId} onClick={() => run(() => setCategoryAffiliateRateAction(catId, catPct))} style={{ ...btn, background: 'var(--color-accent)', color: '#fff' }}>Add / update</button>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr><th style={th}>Category</th><th style={th}>Percent</th><th style={th}></th></tr></thead>
-          <tbody>
-            {categoryRates.map((r) => (
-              <tr key={r.id}>
-                <td style={td}>{categoryName(r.category_id)}</td>
-                <td style={td}>{r.percent}%</td>
-                <td style={td}><button disabled={pending} onClick={() => run(() => removeCategoryAffiliateRateAction(r.id))} style={{ ...btn, background: '#fbecea', color: '#b23b2e' }}>Remove</button></td>
-              </tr>
-            ))}
-            {categoryRates.length === 0 && <tr><td style={{ ...td, color: 'var(--muted-2)' }} colSpan={3}>No category overrides.</td></tr>}
-          </tbody>
-        </table>
+        <div style={{ overflow: 'auto', maxHeight: 320, border: '1px solid rgba(43,42,38,.07)', borderRadius: 10 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr><th style={thSticky}>Category</th><th style={thSticky}>Percent</th><th style={thSticky}></th></tr></thead>
+            <tbody>
+              {categoryRates.map((r) => (
+                <tr key={r.id}>
+                  <td style={td}>{categoryName(r.category_id)}</td>
+                  <td style={td}>{r.percent}%</td>
+                  <td style={td}><button disabled={pending} onClick={() => run(() => removeCategoryAffiliateRateAction(r.id))} style={{ ...btn, background: '#fbecea', color: '#b23b2e' }}>Remove</button></td>
+                </tr>
+              ))}
+              {categoryRates.length === 0 && <tr><td style={{ ...td, color: 'var(--muted-2)' }} colSpan={3}>No category overrides.</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div style={box}>
@@ -138,20 +141,22 @@ export function AffiliateRateSettings({ defaultPercent, categories, categoryRate
             Add / update
           </button>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr><th style={th}>Product</th><th style={th}>Percent</th><th style={th}>Fixed $</th><th style={th}></th></tr></thead>
-          <tbody>
-            {productRates.map((r) => (
-              <tr key={r.id}>
-                <td style={td}>{r.part_number} — {r.name}</td>
-                <td style={td}>{r.percent != null ? `${r.percent}%` : '—'}</td>
-                <td style={td}>{r.fixed_amount != null ? `$${Number(r.fixed_amount).toFixed(2)}` : '—'}</td>
-                <td style={td}><button disabled={pending} onClick={() => run(() => removeProductAffiliateRateAction(r.id))} style={{ ...btn, background: '#fbecea', color: '#b23b2e' }}>Remove</button></td>
-              </tr>
-            ))}
-            {productRates.length === 0 && <tr><td style={{ ...td, color: 'var(--muted-2)' }} colSpan={4}>No product overrides.</td></tr>}
-          </tbody>
-        </table>
+        <div style={{ overflow: 'auto', maxHeight: 420, border: '1px solid rgba(43,42,38,.07)', borderRadius: 10 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr><th style={thSticky}>Product</th><th style={thSticky}>Percent</th><th style={thSticky}>Fixed $</th><th style={thSticky}></th></tr></thead>
+            <tbody>
+              {productRates.map((r) => (
+                <tr key={r.id}>
+                  <td style={td}>{r.part_number} — {r.name}</td>
+                  <td style={td}>{r.percent != null ? `${r.percent}%` : '—'}</td>
+                  <td style={td}>{r.fixed_amount != null ? `$${Number(r.fixed_amount).toFixed(2)}` : '—'}</td>
+                  <td style={td}><button disabled={pending} onClick={() => run(() => removeProductAffiliateRateAction(r.id))} style={{ ...btn, background: '#fbecea', color: '#b23b2e' }}>Remove</button></td>
+                </tr>
+              ))}
+              {productRates.length === 0 && <tr><td style={{ ...td, color: 'var(--muted-2)' }} colSpan={4}>No product overrides.</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
