@@ -25,13 +25,16 @@ export async function POST(req: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as {
       metadata?: { orderId?: string };
-      customer_details?: { email?: string | null } | null;
+      customer_details?: { email?: string | null; phone?: string | null; name?: string | null } | null;
       shipping_details?: { name?: string | null; address?: ShippingAddress | null } | null;
     };
     const orderId = session.metadata?.orderId;
     if (orderId) {
       const admin = getSupabaseAdmin();
-      const email = session.customer_details?.email ?? undefined;
+      const email = session.customer_details?.email ?? null;
+      const phone = session.customer_details?.phone ?? null;
+      const name = session.customer_details?.name ?? session.shipping_details?.name ?? null;
+      const contact = { ...(email ? { email } : {}), ...(phone ? { phone } : {}), ...(name ? { name } : {}) };
 
       const rawAddress = session.shipping_details?.address ?? null;
       const shippingAddress: ShippingAddress | null = rawAddress
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
 
       await admin.from('orders').update({
         status: 'paid',
-        ...(email ? { contact: { email } } : {}),
+        ...(Object.keys(contact).length ? { contact } : {}),
         ...(shippingAddress ? { shipping_address: shippingAddress } : {}),
         estimated_delivery_earliest: estimate.earliest.toISOString().slice(0, 10),
         estimated_delivery_latest: estimate.latest.toISOString().slice(0, 10),

@@ -65,6 +65,7 @@ export async function createCheckoutSession(
     mode: 'payment',
     customer_email: user?.email ?? undefined, // guests: Stripe collects the email on its page
     shipping_address_collection: { allowed_countries: ['US'] },
+    phone_number_collection: { enabled: true },
     line_items: items.map((i) => ({
       quantity: i.qty,
       price_data: {
