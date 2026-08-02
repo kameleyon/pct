@@ -1,7 +1,7 @@
 import { getStripe } from '@/lib/stripe';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getAffiliateConfig, resolveAffiliateAmount, splitRemainder, type RateRow } from '@/lib/affiliate';
-import { sendEmail, getOrderNotificationRecipients, orderPlacedEmail, affiliateSaleEmail } from '@/lib/email';
+import { sendEmail, getOrderNotificationRecipients, orderPlacedEmail, orderReceiptEmail, affiliateSaleEmail } from '@/lib/email';
 import { formatAddress, formatDeliveryWindowFromDates, type ShippingAddress } from '@/lib/shipping';
 
 export const runtime = 'nodejs';
@@ -42,21 +42,39 @@ export async function POST(req: Request) {
         if (cart) await admin.from('cart_items').delete().eq('cart_id', cart.id);
       }
 
+      const { data: orderItems } = await admin.from('order_items').select('name, quantity, unit_price').eq('order_id', orderId);
+      const shippingAddress = formatAddress(order?.shipping_address as ShippingAddress | null);
+      const deliveryWindow = order?.estimated_delivery_earliest && order?.estimated_delivery_latest
+        ? formatDeliveryWindowFromDates(order.estimated_delivery_earliest, order.estimated_delivery_latest)
+        : null;
+      const contactEmail = (order?.contact as { email?: string } | null)?.email ?? null;
+
       const recipients = await getOrderNotificationRecipients();
       if (recipients.length) {
-        const { count } = await admin.from('order_items').select('id', { count: 'exact', head: true }).eq('order_id', orderId);
         await sendEmail(
           recipients,
           `New order placed — ${orderId.slice(0, 8)}`,
           orderPlacedEmail({
             orderId,
             total: Number(order?.total ?? 0),
-            email: (order?.contact as { email?: string } | null)?.email ?? null,
-            itemCount: count ?? 0,
-            shippingAddress: formatAddress(order?.shipping_address as ShippingAddress | null),
-            deliveryWindow: order?.estimated_delivery_earliest && order?.estimated_delivery_latest
-              ? formatDeliveryWindowFromDates(order.estimated_delivery_earliest, order.estimated_delivery_latest)
-              : null,
+            email: contactEmail,
+            itemCount: orderItems?.length ?? 0,
+            shippingAddress,
+            deliveryWindow,
+          })
+        );
+      }
+
+      if (contactEmail) {
+        await sendEmail(
+          contactEmail,
+          `Your order is confirmed — ${orderId.slice(0, 8)}`,
+          orderReceiptEmail({
+            orderId,
+            total: Number(order?.total ?? 0),
+            items: orderItems ?? [],
+            shippingAddress,
+            deliveryWindow,
           })
         );
       }
