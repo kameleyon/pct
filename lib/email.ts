@@ -57,6 +57,31 @@ export function affiliateSaleEmail(opts: { saleAmount: number; affiliateAmount: 
   );
 }
 
+export function orderReceiptEmail(opts: {
+  orderId: string; total: number; items: { name: string; quantity: number; unit_price: number | null }[];
+  shippingAddress?: string | null; deliveryWindow?: string | null;
+}) {
+  const itemRows = opts.items.map((it) => `
+    <tr>
+      <td style="padding:6px 0;color:#4a473f">${escapeHtml(it.name)} × ${it.quantity}</td>
+      <td style="padding:6px 0;text-align:right;font-weight:600">${it.unit_price != null ? money(it.unit_price * it.quantity) : 'Quote'}</td>
+    </tr>`).join('');
+  return wrap(
+    'Thanks for your order',
+    `<p>We’ve received your order and it’s being processed. Here’s your receipt.</p>
+     <table style="width:100%;border-collapse:collapse;margin:16px 0">
+       <tr><td style="padding:6px 0;color:#6b6a63">Order</td><td style="padding:6px 0;text-align:right;font-family:monospace">${opts.orderId.slice(0, 8)}…</td></tr>
+     </table>
+     <table style="width:100%;border-collapse:collapse;margin:0 0 12px;border-top:1px solid #e5e2d9;padding-top:8px">
+       ${itemRows}
+       <tr><td style="padding:10px 0 0;font-weight:700;border-top:1px solid #e5e2d9">Total</td><td style="padding:10px 0 0;text-align:right;font-weight:700;border-top:1px solid #e5e2d9">${money(opts.total)}</td></tr>
+     </table>
+     ${opts.deliveryWindow ? `<p style="margin:12px 0 4px"><b>Estimated arrival:</b> ${escapeHtml(opts.deliveryWindow)}</p>` : ''}
+     ${opts.shippingAddress ? `<div style="margin-top:8px"><div style="color:#6b6a63;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Shipping to</div><div style="white-space:pre-line;font-size:13.5px">${escapeHtml(opts.shippingAddress)}</div></div>` : ''}
+     <p style="color:#6b6a63;font-size:13px;margin-top:20px">Questions about your order? Just reply to this email.</p>`
+  );
+}
+
 export function orderPlacedEmail(opts: {
   orderId: string; total: number; email: string | null; itemCount: number;
   shippingAddress?: string | null; deliveryWindow?: string | null;

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { createSupabaseServer } from '@/lib/supabase-server';
@@ -72,7 +73,9 @@ export default async function AdminPage() {
             <tbody>
               {(orders ?? []).map((o: any) => (
                 <tr key={o.id}>
-                  <td style={{ ...td, fontFamily: 'monospace', fontSize: 11.5, color: 'var(--muted-2)' }}>{o.id.slice(0, 8)}…</td>
+                  <td style={{ ...td, fontFamily: 'monospace', fontSize: 11.5 }}>
+                    <Link href={`/admin/orders/${o.id}`} style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{o.id.slice(0, 8)}…</Link>
+                  </td>
                   <td style={td}>{o.contact?.email || o.contact?.name || <span style={{ color: 'var(--muted-2)' }}>—</span>}</td>
                   <td style={td}>{o.items?.length ?? 0}</td>
                   <td style={td}><OrderStatus orderId={o.id} status={o.status} /></td>
