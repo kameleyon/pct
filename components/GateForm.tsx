@@ -34,7 +34,7 @@ export function GateForm({ dest }: { dest: string }) {
         onChange={(e) => setPassword(e.target.value)}
       />
       <button disabled={pending || !password} style={{ ...btn, opacity: pending || !password ? 0.7 : 1 }}>
-        {pending ? 'Checking…' : 'Enter site'}
+        {pending ? 'Checking…' : 'Access sandbox'}
       </button>
     </form>
   );

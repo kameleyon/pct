@@ -22,8 +22,8 @@ export default async function GatePage({ searchParams }: { searchParams: Promise
       <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 20, padding: '36px 32px', boxShadow: '0 18px 40px rgba(12,44,25,.1)' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/pct-logo.png" alt="Precision CNC Tools" style={{ height: 48, width: 48, objectFit: 'contain', display: 'block', margin: '0 auto 16px' }} />
-        <h1 style={{ fontSize: 20, textAlign: 'center', margin: '0 0 6px', color: 'var(--color-accent)' }}>Private preview</h1>
-        <p style={{ fontSize: 13.5, color: 'var(--muted)', textAlign: 'center', margin: '0 0 24px' }}>This site isn&rsquo;t public yet. Enter the password to continue.</p>
+        <h1 style={{ fontSize: 20, textAlign: 'center', margin: '0 0 6px', color: 'var(--color-accent)' }}>This site is under construction</h1>
+        <p style={{ fontSize: 13.5, color: 'var(--muted)', textAlign: 'center', margin: '0 0 24px' }}>Provide the password to access the sandbox.</p>
         <GateForm dest={dest} />
       </div>
     </main>
