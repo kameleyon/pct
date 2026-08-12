@@ -28,7 +28,7 @@ export function OrderStatus({ orderId, status }: { orderId: string; status: stri
   return (
     <select value={value} disabled={pending} style={{ ...sel, opacity: pending ? 0.6 : 1 }}
       onChange={(e) => { const v = e.target.value; setValue(v); start(async () => { await setOrderStatusAction(orderId, v); router.refresh(); }); }}>
-      {['quote_requested', 'pending', 'paid', 'shipped', 'cancelled'].map((s) => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+      {['quote_requested', 'quoted', 'po_issued', 'closed', 'pending', 'paid', 'shipped', 'cancelled'].map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
     </select>
   );
 }

@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getAffiliateConfig, resolveAffiliateAmount, splitRemainder, type RateRow } from '@/lib/affiliate';
 import { sendEmail, getOrderNotificationRecipients, orderPlacedEmail, orderReceiptEmail, affiliateSaleEmail } from '@/lib/email';
 import { formatAddress, formatDeliveryWindowFromDates, type ShippingAddress } from '@/lib/shipping';
+import { maybeCloseOrder } from '@/lib/orders';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,60 +28,92 @@ export async function POST(req: Request) {
     const orderId = session.metadata?.orderId;
     if (orderId) {
       const admin = getSupabaseAdmin();
-      // Contact/shipping/delivery-estimate were already captured on our own
-      // /checkout page and stored at order-creation time — Stripe only
-      // handled payment, so there's nothing to pull from the session here.
-      await admin.from('orders').update({ status: 'paid' }).eq('id', orderId);
-      const { data: order } = await admin
-        .from('orders')
-        .select('profile_id, subtotal, total, affiliate_id, contact, shipping_address, estimated_delivery_earliest, estimated_delivery_latest')
-        .eq('id', orderId)
-        .single();
-      // empty the buyer's cart now that the order is paid (members; guests clear locally on success)
-      if (order?.profile_id) {
-        const { data: cart } = await admin.from('carts').select('id').eq('profile_id', order.profile_id).maybeSingle();
-        if (cart) await admin.from('cart_items').delete().eq('cart_id', cart.id);
-      }
+      const { data: existing } = await admin.from('orders').select('status').eq('id', orderId).single();
 
-      const { data: orderItems } = await admin.from('order_items').select('name, quantity, unit_price').eq('order_id', orderId);
-      const shippingAddress = formatAddress(order?.shipping_address as ShippingAddress | null);
-      const deliveryWindow = order?.estimated_delivery_earliest && order?.estimated_delivery_latest
-        ? formatDeliveryWindowFromDates(order.estimated_delivery_earliest, order.estimated_delivery_latest)
-        : null;
-      const contactEmail = (order?.contact as { email?: string } | null)?.email ?? null;
+      if (existing?.status === 'pending') {
+        // ---- legacy retail cart-checkout flow (currently dormant in the UI,
+        // kept fully intact so it works again the moment RETAIL_MODE=on). ----
+        await admin.from('orders').update({ status: 'paid' }).eq('id', orderId);
+        const { data: order } = await admin
+          .from('orders')
+          .select('profile_id, subtotal, total, affiliate_id, contact, shipping_address, estimated_delivery_earliest, estimated_delivery_latest')
+          .eq('id', orderId)
+          .single();
+        // empty the buyer's cart now that the order is paid (members; guests clear locally on success)
+        if (order?.profile_id) {
+          const { data: cart } = await admin.from('carts').select('id').eq('profile_id', order.profile_id).maybeSingle();
+          if (cart) await admin.from('cart_items').delete().eq('cart_id', cart.id);
+        }
 
-      const recipients = await getOrderNotificationRecipients();
-      if (recipients.length) {
-        await sendEmail(
-          recipients,
-          `New order placed — ${orderId.slice(0, 8)}`,
-          orderPlacedEmail({
-            orderId,
-            total: Number(order?.total ?? 0),
-            email: contactEmail,
-            itemCount: orderItems?.length ?? 0,
-            shippingAddress,
-            deliveryWindow,
-          })
-        );
-      }
+        const { data: orderItems } = await admin.from('order_items').select('name, quantity, unit_price').eq('order_id', orderId);
+        const shippingAddress = formatAddress(order?.shipping_address as ShippingAddress | null);
+        const deliveryWindow = order?.estimated_delivery_earliest && order?.estimated_delivery_latest
+          ? formatDeliveryWindowFromDates(order.estimated_delivery_earliest, order.estimated_delivery_latest)
+          : null;
+        const contactEmail = (order?.contact as { email?: string } | null)?.email ?? null;
 
-      if (contactEmail) {
-        await sendEmail(
-          contactEmail,
-          `Your order is confirmed — ${orderId.slice(0, 8)}`,
-          orderReceiptEmail({
-            orderId,
-            total: Number(order?.total ?? 0),
-            items: orderItems ?? [],
-            shippingAddress,
-            deliveryWindow,
-          })
-        );
-      }
+        const recipients = await getOrderNotificationRecipients();
+        if (recipients.length) {
+          await sendEmail(
+            recipients,
+            `New order placed — ${orderId.slice(0, 8)}`,
+            orderPlacedEmail({
+              orderId,
+              total: Number(order?.total ?? 0),
+              email: contactEmail,
+              itemCount: orderItems?.length ?? 0,
+              shippingAddress,
+              deliveryWindow,
+            })
+          );
+        }
 
-      if (order?.affiliate_id) {
-        await recordAffiliateCommission(admin, orderId, order.affiliate_id, Number(order.subtotal ?? order.total ?? 0));
+        if (contactEmail) {
+          await sendEmail(
+            contactEmail,
+            `Your order is confirmed — ${orderId.slice(0, 8)}`,
+            orderReceiptEmail({ orderId, total: Number(order?.total ?? 0), items: orderItems ?? [], shippingAddress, deliveryWindow })
+          );
+        }
+
+        if (order?.affiliate_id) {
+          await recordAffiliateCommission(admin, orderId, order.affiliate_id, Number(order.subtotal ?? order.total ?? 0));
+        }
+      } else {
+        // ---- quote -> PO -> invoice flow: this is a buyer paying an invoice
+        // on a PO'd order. Items/pricing were already set by admin at the
+        // Quote step. ----
+        await admin.from('orders').update({ payment_status: 'paid', paid_at: new Date().toISOString() }).eq('id', orderId);
+        await admin.from('order_events').insert({ order_id: orderId, event_type: 'payment_received' });
+
+        const { data: order } = await admin
+          .from('orders')
+          .select('subtotal, total, affiliate_id, contact')
+          .eq('id', orderId)
+          .single();
+        const { data: orderItems } = await admin.from('order_items').select('name, quantity, unit_price').eq('order_id', orderId);
+        const contactEmail = (order?.contact as { email?: string } | null)?.email ?? null;
+
+        const recipients = await getOrderNotificationRecipients();
+        if (recipients.length) {
+          await sendEmail(
+            recipients,
+            `Invoice paid — ${orderId.slice(0, 8)}`,
+            orderPlacedEmail({ orderId, total: Number(order?.total ?? 0), email: contactEmail, itemCount: orderItems?.length ?? 0 })
+          );
+        }
+        if (contactEmail) {
+          await sendEmail(
+            contactEmail,
+            `Payment received — ${orderId.slice(0, 8)}`,
+            orderReceiptEmail({ orderId, total: Number(order?.total ?? 0), items: orderItems ?? [] })
+          );
+        }
+        if (order?.affiliate_id) {
+          await recordAffiliateCommission(admin, orderId, order.affiliate_id, Number(order.subtotal ?? order.total ?? 0));
+        }
+
+        await maybeCloseOrder(admin, orderId);
       }
     }
   }

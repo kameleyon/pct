@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { type Product, specSummary, BRAND, categoryImage } from '@/lib/catalog';
 import { AddToCart } from './cart/AddToCart';
 import { FavoriteButton } from './FavoriteButton';
+import { isQuoteOnlyMode } from '@/lib/site-mode';
 
 const chip: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600,
@@ -12,12 +13,13 @@ const chip: React.CSSProperties = {
 export function ProductCard({ product, categorySlug }: { product: Product; categorySlug: string }) {
   const coated = product.coating && product.coating !== 'Uncoated';
   const image = product.primary_image_url || categoryImage(categorySlug);
+  const quoteOnly = isQuoteOnlyMode();
   const listPrice = product.price;
-  const effPrice = product.sale_price ?? product.price; // what the buyer pays
+  const effPrice = quoteOnly ? null : (product.sale_price ?? product.price); // what the buyer pays
   const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   // Specials badge: % off when a sale price is set below list.
   const discountPct =
-    listPrice && product.sale_price && product.sale_price < listPrice
+    !quoteOnly && listPrice && product.sale_price && product.sale_price < listPrice
       ? Math.round((1 - product.sale_price / listPrice) * 100)
       : 0;
   return (
@@ -73,7 +75,7 @@ export function ProductCard({ product, categorySlug }: { product: Product; categ
       </Link>
 
       {/* footer */}
-      <AddToCart productId={product.id} partNumber={product.part_number} name={product.name} image={image} price={product.sale_price ?? product.price} />
+      <AddToCart productId={product.id} partNumber={product.part_number} name={product.name} image={image} price={effPrice} label={quoteOnly ? 'Add to Quote' : 'Add to Cart'} />
     </article>
   );
 }

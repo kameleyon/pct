@@ -5,7 +5,7 @@ import { createSupabaseServer } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
-const ORDER_STATUSES = ['quote_requested', 'pending', 'paid', 'shipped', 'cancelled'] as const;
+const ORDER_STATUSES = ['quote_requested', 'quoted', 'po_issued', 'closed', 'pending', 'paid', 'shipped', 'cancelled'] as const;
 const card: React.CSSProperties = { background: 'var(--color-surface)', borderRadius: 20, padding: 24, border: '1px solid rgba(43,42,38,.08)', textDecoration: 'none', color: 'inherit', display: 'block' };
 
 export default async function AdminOverviewPage() {

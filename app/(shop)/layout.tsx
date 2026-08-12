@@ -21,7 +21,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
       <Header />
       {children}
       <Footer />
-      <CartDrawer isAuthed={isAuthed} />
+      <CartDrawer />
     </CartProvider>
   );
 }

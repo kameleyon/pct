@@ -82,6 +82,47 @@ export function orderReceiptEmail(opts: {
   );
 }
 
+export function quoteReadyEmail(opts: {
+  orderId: string; total: number; items: { name: string; quantity: number; unit_price: number | null }[]; orderUrl: string;
+}) {
+  const itemRows = opts.items.map((it) => `
+    <tr>
+      <td style="padding:6px 0;color:#4a473f">${escapeHtml(it.name)} × ${it.quantity}</td>
+      <td style="padding:6px 0;text-align:right;font-weight:600">${it.unit_price != null ? money(it.unit_price * it.quantity) : '—'}</td>
+    </tr>`).join('');
+  return wrap(
+    'Your quote is ready',
+    `<p>We’ve priced the list you sent us. Here’s your quote.</p>
+     <table style="width:100%;border-collapse:collapse;margin:0 0 12px;border-top:1px solid #e5e2d9;padding-top:8px">
+       ${itemRows}
+       <tr><td style="padding:10px 0 0;font-weight:700;border-top:1px solid #e5e2d9">Total</td><td style="padding:10px 0 0;text-align:right;font-weight:700;border-top:1px solid #e5e2d9">${money(opts.total)}</td></tr>
+     </table>
+     <p><a href="${opts.orderUrl}" style="display:inline-block;margin-top:8px;background:#1a5c34;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600">Review &amp; accept quote</a></p>
+     <p style="color:#6b6a63;font-size:13px;margin-top:20px">Sign in with the email you used to request this quote to accept it and issue a PO.</p>`
+  );
+}
+
+export function poIssuedEmail(opts: { orderId: string; poNumber: string | null; contactEmail: string | null; total: number }) {
+  return wrap(
+    'PO issued',
+    `<table style="width:100%;border-collapse:collapse;margin:16px 0">
+       <tr><td style="padding:6px 0;color:#6b6a63">Order</td><td style="padding:6px 0;text-align:right;font-family:monospace">${opts.orderId.slice(0, 8)}…</td></tr>
+       <tr><td style="padding:6px 0;color:#6b6a63">PO number</td><td style="padding:6px 0;text-align:right">${opts.poNumber ? escapeHtml(opts.poNumber) : '—'}</td></tr>
+       <tr><td style="padding:6px 0;color:#6b6a63">Buyer</td><td style="padding:6px 0;text-align:right">${opts.contactEmail ? escapeHtml(opts.contactEmail) : '—'}</td></tr>
+       <tr><td style="padding:6px 0;color:#6b6a63">Total</td><td style="padding:6px 0;text-align:right;font-weight:600">${money(opts.total)}</td></tr>
+     </table>
+     <p style="color:#6b6a63;font-size:13px">Decide whether this order requires escrow, then proceed with credit vetting or invoicing.</p>`
+  );
+}
+
+export function invoiceEmail(opts: { orderId: string; total: number; orderUrl: string }) {
+  return wrap(
+    'Your invoice is ready',
+    `<p>Your purchase order is confirmed. An invoice for <b>${money(opts.total)}</b> is ready to pay.</p>
+     <p><a href="${opts.orderUrl}" style="display:inline-block;margin-top:8px;background:#1a5c34;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600">View &amp; pay invoice</a></p>`
+  );
+}
+
 export function orderPlacedEmail(opts: {
   orderId: string; total: number; email: string | null; itemCount: number;
   shippingAddress?: string | null; deliveryWindow?: string | null;

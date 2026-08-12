@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useCart } from './CartProvider';
 
-export function AddToCart({ productId, partNumber, name, image, price }: { productId: string; partNumber: string; name: string; image: string; price?: number | null }) {
+export function AddToCart({ productId, partNumber, name, image, price, label = 'Add to Cart' }: { productId: string; partNumber: string; name: string; image: string; price?: number | null; label?: string }) {
   const { add } = useCart();
   const [qty, setQty] = useState(1);
   return (
@@ -18,7 +18,7 @@ export function AddToCart({ productId, partNumber, name, image, price }: { produ
         className="h-gold"
         style={{ flex: 1, height: 42, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', color: '#fff', background: 'var(--color-gold)', border: 0, borderRadius: 11 }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></svg>Add to Cart
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></svg>{label}
       </button>
     </div>
   );
