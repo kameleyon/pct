@@ -13,7 +13,7 @@ export async function unlockSiteAction(password: string): Promise<{ ok: boolean;
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24, // 24h — re-check the password daily rather than staying unlocked for a month
     path: '/',
   });
   return { ok: true };
