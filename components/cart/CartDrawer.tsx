@@ -1,32 +1,23 @@
 'use client';
-import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from './CartProvider';
-import { requestQuoteAction } from '@/app/cart/actions';
-import { useAuthModal } from '@/components/auth/AuthProvider';
 
 const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
-  const { lines, count, open, setOpen, setQty, remove, clear } = useCart();
-  const auth = useAuthModal();
+export function CartDrawer() {
+  const { lines, count, open, setOpen, setQty, remove } = useCart();
   const router = useRouter();
-  const [pending, start] = useTransition();
-  const [done, setDone] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
 
   if (!open) return null;
 
   const subtotal = lines.reduce((s, l) => s + (l.price && l.price > 0 ? l.price * l.qty : 0), 0);
   const hasPriced = subtotal > 0;
 
-  const submitQuote = () => {
-    setErr(null);
-    if (!isAuthed) { setOpen(false); auth.open('signin'); return; }
-    start(async () => {
-      const r = await requestQuoteAction({});
-      if (r.ok) { clear(); setDone(true); } else setErr(r.error ?? 'Something went wrong.');
-    });
+  // Guests can request quotes too — contact details are collected on the
+  // dedicated /quote page (mirrors /checkout), not one-click from the drawer.
+  const goToQuote = () => {
+    setOpen(false);
+    router.push('/quote');
   };
 
   // Guest checkout allowed — no sign-in required. Contact/shipping details
@@ -47,13 +38,7 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
         </header>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: 18 }}>
-          {done ? (
-            <div style={{ textAlign: 'center', marginTop: 60, padding: 20 }}>
-              <div style={{ fontSize: 40 }}>✓</div>
-              <h4 style={{ margin: '10px 0 6px' }}>Quote requested</h4>
-              <p style={{ color: 'var(--muted)', fontSize: 14 }}>Our team will email you pricing shortly.</p>
-            </div>
-          ) : lines.length === 0 ? (
+          {lines.length === 0 ? (
             <div style={{ textAlign: 'center', marginTop: 80, color: 'var(--muted)' }}>
               <p style={{ fontWeight: 600 }}>Your cart is empty.</p>
               <p style={{ fontSize: 13 }}>Add tools to request a quote.</p>
@@ -84,9 +69,8 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
           )}
         </div>
 
-        {!done && lines.length > 0 && (
+        {lines.length > 0 && (
           <footer style={{ padding: 18, borderTop: '1px solid rgba(43,42,38,.08)' }}>
-            {err && <div style={{ background: '#fbecea', color: '#b23b2e', fontSize: 12.5, fontWeight: 600, padding: '8px 10px', borderRadius: 9, marginBottom: 10 }}>{err}</div>}
             {hasPriced ? (
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
@@ -96,15 +80,15 @@ export function CartDrawer({ isAuthed }: { isAuthed: boolean }) {
                 <button onClick={goToCheckout} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
                   Continue to Checkout
                 </button>
-                <button onClick={submitQuote} disabled={pending} style={{ width: '100%', height: 42, borderRadius: 12, background: 'transparent', color: 'var(--color-accent)', border: '1px solid rgba(43,42,38,.14)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', marginTop: 8 }}>
-                  {pending ? 'Submitting…' : 'Request a quote instead'}
+                <button onClick={goToQuote} style={{ width: '100%', height: 42, borderRadius: 12, background: 'transparent', color: 'var(--color-accent)', border: '1px solid rgba(43,42,38,.14)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', marginTop: 8 }}>
+                  Request a quote instead
                 </button>
               </>
             ) : (
               <>
                 <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '0 0 10px' }}>Factory-direct pricing is quoted per order. Submit your list and we’ll email pricing.</p>
-                <button onClick={submitQuote} disabled={pending} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
-                  {pending ? 'Submitting…' : isAuthed ? 'Request Quote' : 'Sign in to Request Quote'}
+                <button onClick={goToQuote} style={{ width: '100%', height: 48, borderRadius: 13, background: 'var(--color-accent)', color: '#fff', border: 0, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+                  Request Quote
                 </button>
               </>
             )}

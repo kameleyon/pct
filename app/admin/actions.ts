@@ -1,13 +1,19 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import type { Role } from '@/lib/roles';
+import { sendEmail, getOrderNotificationRecipients, quoteReadyEmail, invoiceEmail } from '@/lib/email';
+import { maybeCloseOrder } from '@/lib/orders';
 
 const ROLES = new Set<Role>(['member', 'vip', 'admin', 'affiliate', 'distributor']);
-const ORDER_STATUSES = new Set(['quote_requested', 'pending', 'paid', 'shipped', 'cancelled']);
+const ORDER_STATUSES = new Set(['quote_requested', 'quoted', 'po_issued', 'closed', 'pending', 'paid', 'shipped', 'cancelled']);
 const AFFILIATE_STATUSES = new Set(['approved', 'rejected']);
+const ESCROW_STATUSES = new Set(['pending', 'funded', 'held', 'released', 'disputed']);
+const CREDIT_STATUSES = new Set(['not_applicable', 'pending_vetting', 'approved', 'denied']);
+const DELIVERY_STATUSES = new Set(['not_shipped', 'shipped', 'delivered']);
 
 /** Admin-only: change a member's role. Enforced here AND by RLS + the role-guard trigger. */
 export async function setUserRoleAction(userId: string, role: Exclude<Role, 'guest'>): Promise<{ ok: boolean; error?: string }> {
@@ -32,6 +38,158 @@ export async function setOrderStatusAction(orderId: string, status: string): Pro
   const { error } = await sb.from('orders').update({ status }).eq('id', orderId);
   if (error) return { ok: false, error: error.message };
   revalidatePath('/admin');
+  return { ok: true };
+}
+
+/** Admin-only: price an RFQ's line items and send the quote to the buyer.
+ *  Buyer never saw a price before this — order_items.unit_price is null until now. */
+export async function sendQuoteAction(
+  orderId: string,
+  items: { id: string; unitPrice: number }[]
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+  if (!items.length) return { ok: false, error: 'No items to price.' };
+  for (const it of items) {
+    if (!(it.unitPrice >= 0)) return { ok: false, error: 'Every line needs a price of 0 or more.' };
+  }
+
+  const sb = await createSupabaseServer();
+  for (const it of items) {
+    const { error } = await sb.from('order_items').update({ unit_price: it.unitPrice }).eq('id', it.id).eq('order_id', orderId);
+    if (error) return { ok: false, error: error.message };
+  }
+
+  const { data: lines } = await sb.from('order_items').select('name,quantity,unit_price').eq('order_id', orderId);
+  const subtotal = (lines ?? []).reduce((s, l) => s + Number(l.unit_price ?? 0) * l.quantity, 0);
+
+  const { data: order, error: orderErr } = await sb
+    .from('orders')
+    .update({ status: 'quoted', quoted_at: new Date().toISOString(), subtotal, total: subtotal })
+    .eq('id', orderId)
+    .select('contact')
+    .single();
+  if (orderErr) return { ok: false, error: orderErr.message };
+  await sb.from('order_events').insert({ order_id: orderId, event_type: 'quoted', actor_id: session.userId, detail: { subtotal } });
+
+  const contactEmail = (order?.contact as { email?: string } | null)?.email;
+  if (contactEmail) {
+    const h = await headers();
+    const origin = `${h.get('x-forwarded-proto') ?? 'https'}://${h.get('host')}`;
+    await sendEmail(
+      contactEmail,
+      'Your quote is ready',
+      quoteReadyEmail({ orderId, total: subtotal, items: (lines ?? []) as any, orderUrl: `${origin}/account/orders/${orderId}` })
+    );
+  }
+
+  revalidatePath(`/admin/orders/${orderId}`);
+  return { ok: true };
+}
+
+/** Admin-only: decide (and audit) whether an order requires escrow. */
+export async function decideEscrowAction(
+  orderId: string,
+  required: boolean,
+  reason: string
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+
+  const sb = await createSupabaseServer();
+  const now = new Date().toISOString();
+  const { error } = await sb
+    .from('orders')
+    .update({
+      escrow_required: required,
+      escrow_reason: reason.trim() || null,
+      escrow_decided_by: session.userId,
+      escrow_decided_at: now,
+      payment_method_type: required ? 'escrow' : 'direct',
+      escrow_status: required ? 'pending' : 'not_applicable',
+    })
+    .eq('id', orderId);
+  if (error) return { ok: false, error: error.message };
+  await sb.from('order_events').insert({ order_id: orderId, event_type: 'escrow_decision', actor_id: session.userId, detail: { required, reason } });
+  revalidatePath(`/admin/orders/${orderId}`);
+  return { ok: true };
+}
+
+/** Admin-only: advance an escrow arrangement's status (tracked manually — no live provider API yet). */
+export async function setEscrowStatusAction(orderId: string, status: string): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+  if (!ESCROW_STATUSES.has(status)) return { ok: false, error: 'Invalid escrow status.' };
+
+  const sb = await createSupabaseServer();
+  const { error } = await sb.from('orders').update({ escrow_status: status }).eq('id', orderId);
+  if (error) return { ok: false, error: error.message };
+  await sb.from('order_events').insert({ order_id: orderId, event_type: 'escrow_status', actor_id: session.userId, detail: { status } });
+  await maybeCloseOrder(sb, orderId);
+  revalidatePath(`/admin/orders/${orderId}`);
+  return { ok: true };
+}
+
+/** Admin-only: approve/deny credit terms for a buyer on the no-escrow path. */
+export async function decideCreditAction(orderId: string, status: string): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+  if (!CREDIT_STATUSES.has(status)) return { ok: false, error: 'Invalid credit status.' };
+
+  const sb = await createSupabaseServer();
+  const { error } = await sb
+    .from('orders')
+    .update({ credit_status: status, credit_decided_by: session.userId, credit_decided_at: new Date().toISOString() })
+    .eq('id', orderId);
+  if (error) return { ok: false, error: error.message };
+  await sb.from('order_events').insert({ order_id: orderId, event_type: 'credit_decision', actor_id: session.userId, detail: { status } });
+  revalidatePath(`/admin/orders/${orderId}`);
+  return { ok: true };
+}
+
+/** Admin-only: mark an invoice sent and email the buyer a link to pay it (via Stripe, on their account order page). */
+export async function sendInvoiceAction(orderId: string): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+
+  const sb = await createSupabaseServer();
+  const { data: order, error } = await sb
+    .from('orders')
+    .update({ invoice_status: 'sent', invoiced_at: new Date().toISOString() })
+    .eq('id', orderId)
+    .select('contact,total')
+    .single();
+  if (error) return { ok: false, error: error.message };
+  await sb.from('order_events').insert({ order_id: orderId, event_type: 'invoice_sent', actor_id: session.userId });
+
+  const contactEmail = (order?.contact as { email?: string } | null)?.email;
+  if (contactEmail) {
+    const h = await headers();
+    const origin = `${h.get('x-forwarded-proto') ?? 'https'}://${h.get('host')}`;
+    await sendEmail(
+      contactEmail,
+      'Your invoice is ready',
+      invoiceEmail({ orderId, total: Number(order?.total ?? 0), orderUrl: `${origin}/account/orders/${orderId}` })
+    );
+  }
+  revalidatePath(`/admin/orders/${orderId}`);
+  return { ok: true };
+}
+
+/** Admin-only: advance shipment/delivery status. */
+export async function setDeliveryStatusAction(orderId: string, status: string): Promise<{ ok: boolean; error?: string }> {
+  const session = await getSession();
+  if (session.role !== 'admin') return { ok: false, error: 'Forbidden.' };
+  if (!DELIVERY_STATUSES.has(status)) return { ok: false, error: 'Invalid delivery status.' };
+
+  const sb = await createSupabaseServer();
+  const patch: Record<string, unknown> = { delivery_status: status };
+  if (status === 'delivered') patch.delivered_at = new Date().toISOString();
+  const { error } = await sb.from('orders').update(patch).eq('id', orderId);
+  if (error) return { ok: false, error: error.message };
+  await sb.from('order_events').insert({ order_id: orderId, event_type: 'delivery_status', actor_id: session.userId, detail: { status } });
+  await maybeCloseOrder(sb, orderId);
+  revalidatePath(`/admin/orders/${orderId}`);
   return { ok: true };
 }
 

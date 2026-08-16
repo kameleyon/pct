@@ -3,6 +3,10 @@ import { redirect, notFound } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { OrderStatus } from '@/components/admin/RoleSelect';
+import {
+  QuotePricingForm, EscrowDecision, EscrowStatusControl,
+  CreditDecision, DeliveryStatusControl, SendInvoiceButton,
+} from '@/components/admin/OrderWorkflow';
 import { formatAddress, formatDeliveryWindowFromDates, type ShippingAddress } from '@/lib/shipping';
 
 export const dynamic = 'force-dynamic';
@@ -23,10 +27,23 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const sb = await createSupabaseServer();
   const { data: order } = await sb
     .from('orders')
-    .select('id,status,subtotal,tax,shipping,total,contact,shipping_address,estimated_delivery_earliest,estimated_delivery_latest,created_at,profile_id,affiliate_id,referral_code,items:order_items(id,part_number,name,unit_price,quantity)')
+    .select(`
+      id,status,subtotal,tax,shipping,total,contact,shipping_address,estimated_delivery_earliest,estimated_delivery_latest,
+      created_at,profile_id,affiliate_id,referral_code,
+      po_number,po_issued_at,quoted_at,
+      payment_method_type,escrow_required,escrow_reason,escrow_status,
+      credit_status,invoice_status,invoiced_at,payment_status,paid_at,delivery_status,closed_at,
+      items:order_items(id,part_number,name,unit_price,quantity)
+    `)
     .eq('id', id)
     .maybeSingle();
   if (!order) notFound();
+
+  const { data: events } = await sb
+    .from('order_events')
+    .select('id,event_type,detail,created_at,actor_id')
+    .eq('order_id', id)
+    .order('created_at', { ascending: false });
 
   const contact = (order.contact ?? {}) as Contact;
   const items = (order.items ?? []) as OrderItem[];
@@ -94,6 +111,76 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         </div>
       )}
 
+      <div style={{ ...card, marginBottom: 24 }}>
+        <div style={{ fontWeight: 600, marginBottom: 14 }}>Workflow</div>
+
+        {order.status === 'quote_requested' && (
+          <>
+            <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 14px' }}>Price this list to send the buyer a quote.</p>
+            <QuotePricingForm orderId={order.id} items={items} />
+          </>
+        )}
+
+        {order.status === 'quoted' && (
+          <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: 0 }}>Quote sent{order.quoted_at ? ` on ${new Date(order.quoted_at).toLocaleString()}` : ''} — waiting on the buyer to accept and issue a PO.</p>
+        )}
+
+        {(order.status === 'po_issued' || order.status === 'closed') && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div>
+              <div style={label}>PO number</div>
+              <div style={{ fontSize: 14 }}>{order.po_number || '—'}{order.po_issued_at ? ` · issued ${new Date(order.po_issued_at).toLocaleDateString()}` : ''}</div>
+            </div>
+
+            <div>
+              <div style={{ ...label, marginBottom: 8 }}>Escrow decision</div>
+              {order.payment_method_type ? (
+                <div>
+                  <div style={{ fontSize: 13.5, marginBottom: 10 }}>
+                    <b>{order.payment_method_type === 'escrow' ? 'Escrow required' : 'No escrow'}</b>
+                    {order.escrow_reason ? ` — ${order.escrow_reason}` : ''}
+                  </div>
+                  {order.payment_method_type === 'escrow' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 12.5, color: 'var(--muted)', fontWeight: 600 }}>Escrow status</span>
+                      <EscrowStatusControl orderId={order.id} status={order.escrow_status} />
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12.5, color: 'var(--muted)', fontWeight: 600 }}>Credit terms</span>
+                        <CreditDecision orderId={order.id} status={order.credit_status} />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <SendInvoiceButton orderId={order.id} invoiceStatus={order.invoice_status} />
+                        <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
+                          {order.invoice_status === 'sent' ? `Invoiced${order.invoiced_at ? ` ${new Date(order.invoiced_at).toLocaleDateString()}` : ''}` : 'Not yet invoiced'}
+                          {' · '}{order.payment_status === 'paid' ? `Paid${order.paid_at ? ` ${new Date(order.paid_at).toLocaleDateString()}` : ''}` : 'Unpaid'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12.5, color: 'var(--muted)', fontWeight: 600 }}>Delivery</span>
+                        <DeliveryStatusControl orderId={order.id} status={order.delivery_status} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <EscrowDecision orderId={order.id} escrowRequired={order.escrow_required} escrowReason={order.escrow_reason} />
+              )}
+            </div>
+
+            {order.status === 'closed' && (
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--color-accent)' }}>Closed{order.closed_at ? ` on ${new Date(order.closed_at).toLocaleDateString()}` : ''}</div>
+            )}
+          </div>
+        )}
+
+        {!['quote_requested', 'quoted', 'po_issued', 'closed'].includes(order.status) && (
+          <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: 0 }}>Legacy retail order — no quote/PO workflow applies.</p>
+        )}
+      </div>
+
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 18, marginBottom: 12 }}>Items ({items.length})</h2>
         <div style={{ background: 'var(--color-surface)', borderRadius: 16, overflow: 'auto', border: '1px solid rgba(43,42,38,.08)' }}>
@@ -121,6 +208,20 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, marginBottom: 12 }}><span style={{ color: 'var(--muted)' }}>Shipping</span><span>{order.shipping != null ? `$${Number(order.shipping).toFixed(2)}` : '—'}</span></div>
         <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(43,42,38,.1)', paddingTop: 12, fontWeight: 700, fontSize: 16 }}><span>Total</span><span>{order.total != null ? `$${Number(order.total).toFixed(2)}` : '—'}</span></div>
       </div>
+
+      {events && events.length > 0 && (
+        <div style={{ ...card, marginTop: 24 }}>
+          <div style={{ fontWeight: 600, marginBottom: 14 }}>Timeline</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {events.map((ev) => (
+              <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13, borderTop: '1px solid rgba(43,42,38,.06)', paddingTop: 10 }}>
+                <span style={{ fontWeight: 600 }}>{ev.event_type.replace(/_/g, ' ')}</span>
+                <span style={{ color: 'var(--muted-2)' }}>{new Date(ev.created_at).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -7,10 +7,12 @@ import { formatAddress, type ShippingAddress } from '@/lib/shipping';
 export const dynamic = 'force-dynamic';
 
 const STATUS_LABEL: Record<string, string> = {
-  quote_requested: 'Quote requested', pending: 'Pending payment', paid: 'Paid', shipped: 'Shipped', cancelled: 'Cancelled',
+  quote_requested: 'Quote requested', quoted: 'Quote ready', po_issued: 'PO issued', closed: 'Closed',
+  pending: 'Pending payment', paid: 'Paid', shipped: 'Shipped', cancelled: 'Cancelled',
 };
 const STATUS_COLOR: Record<string, string> = {
-  quote_requested: 'var(--muted)', pending: 'var(--color-gold-700)', paid: 'var(--color-accent)', shipped: 'var(--color-accent)', cancelled: '#b23b2e',
+  quote_requested: 'var(--muted)', quoted: 'var(--color-gold-700)', po_issued: 'var(--color-accent)', closed: 'var(--color-accent)',
+  pending: 'var(--color-gold-700)', paid: 'var(--color-accent)', shipped: 'var(--color-accent)', cancelled: '#b23b2e',
 };
 
 type OrderItem = { id: string; part_number: string; name: string; unit_price: number | null; quantity: number };
@@ -51,7 +53,7 @@ export default async function OrdersPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Order</div>
-                    <div style={{ fontFamily: 'monospace', fontSize: 13 }}>{o.id.slice(0, 8)}…</div>
+                    <Link href={`/account/orders/${o.id}`} style={{ fontFamily: 'monospace', fontSize: 13, color: 'var(--color-accent)', fontWeight: 600 }}>{o.id.slice(0, 8)}…</Link>
                   </div>
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Placed</div>

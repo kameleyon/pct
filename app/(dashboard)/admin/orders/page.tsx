@@ -9,9 +9,12 @@ export const dynamic = 'force-dynamic';
 
 const PER_PAGE = 25;
 
-const STATUSES = ['all', 'quote_requested', 'pending', 'paid', 'shipped', 'cancelled'] as const;
+const STATUSES = ['all', 'quote_requested', 'quoted', 'po_issued', 'closed', 'pending', 'paid', 'shipped', 'cancelled'] as const;
 type StatusFilter = (typeof STATUSES)[number];
-const STATUS_LABEL: Record<StatusFilter, string> = { all: 'All', quote_requested: 'Quote requested', pending: 'Pending', paid: 'Paid', shipped: 'Shipped', cancelled: 'Cancelled' };
+const STATUS_LABEL: Record<StatusFilter, string> = {
+  all: 'All', quote_requested: 'Quote requested', quoted: 'Quoted', po_issued: 'PO issued', closed: 'Closed',
+  pending: 'Pending', paid: 'Paid', shipped: 'Shipped', cancelled: 'Cancelled',
+};
 
 const SORTS = { date_desc: ['created_at', false], date_asc: ['created_at', true], total_desc: ['total', false], total_asc: ['total', true] } as const;
 type SortKey = keyof typeof SORTS;

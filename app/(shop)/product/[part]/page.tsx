@@ -4,6 +4,7 @@ import { getProductByPart, getCategoryById, getCategoryPath, categoryImage, BRAN
 import { Heart, Coupon, Star, Truck, Shield, Check } from '@/components/icons';
 import { BulkPricing } from '@/components/BulkPricing';
 import { AddToCart } from '@/components/cart/AddToCart';
+import { isQuoteOnlyMode } from '@/lib/site-mode';
 
 export const revalidate = 300;
 
@@ -37,6 +38,8 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
   const path = await getCategoryPath(product.category_id);
   const rows = specRows(product);
   const powerA = product.coating === 'PowerA (AlTiN)';
+  const quoteOnly = isQuoteOnlyMode();
+  const price = quoteOnly ? null : (product.sale_price ?? product.price);
 
   return (
     <main className="wrap" style={{ padding: '20px 32px 72px' }}>
@@ -83,7 +86,7 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
           </div>
           <div style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 18px' }}>Solid carbide{powerA ? ', PowerA (AlTiN) coated' : ''} · <b style={{ color: 'var(--green)' }}>Made in the USA</b></div>
 
-          <BulkPricing price={product.sale_price ?? product.price} />
+          <BulkPricing price={price} />
 
           <div style={{ marginBottom: 22 }}>
             <AddToCart
@@ -91,7 +94,8 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
               partNumber={product.part_number}
               name={product.name}
               image={product.primary_image_url || categoryImage(category?.slug ?? '')}
-              price={product.sale_price ?? product.price}
+              price={price}
+              label={quoteOnly ? 'Add to Quote' : 'Add to Cart'}
             />
           </div>
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 12.5, fontWeight: 600, color: 'var(--muted)' }}>
