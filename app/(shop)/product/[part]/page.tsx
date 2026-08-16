@@ -86,7 +86,13 @@ export default async function ProductPage({ params }: { params: Promise<{ part: 
           </div>
           <div style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 18px' }}>Solid carbide{powerA ? ', PowerA (AlTiN) coated' : ''} · <b style={{ color: 'var(--green)' }}>Made in the USA</b></div>
 
-          <BulkPricing price={price} />
+          {quoteOnly ? (
+            <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 22, marginBottom: 20, fontSize: 13.5, color: 'var(--muted)' }}>
+              Pricing is quoted per order, including volume &amp; contract pricing. Add to your quote below and we’ll follow up with firm numbers.
+            </div>
+          ) : (
+            <BulkPricing price={price} />
+          )}
 
           <div style={{ marginBottom: 22 }}>
             <AddToCart
